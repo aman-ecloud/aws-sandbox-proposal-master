@@ -1,0 +1,162 @@
+[
+  {
+    "serviceName": "Amazon EC2",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "AWS Lambda",
+    "status": "FAIL",
+    "savedSuccessfully": true,
+    "warnings": [
+      "[AWS Lambda] Field not found: test"
+    ]
+  },
+  {
+    "serviceName": "AWS Fargate",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon EKS",
+    "status": "FAIL",
+    "savedSuccessfully": true,
+    "warnings": [
+      "[Amazon EKS] Section button not found: EKS Cluster Pricing - Standard Support",
+      "[Amazon EKS] Section button not found: EKS Cluster Pricing - Extended Support",
+      "[Amazon EKS] Section button not found: EKS Capabilities Pricing",
+      "[Amazon EKS] Section button not found: EKS Hybrid Nodes Pricing"
+    ]
+  },
+  {
+    "serviceName": "Amazon Lightsail",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Simple Storage Service (S3)",
+    "status": "FAIL",
+    "savedSuccessfully": true,
+    "warnings": [
+      "[Amazon Simple Storage Service (S3)] Field not found: S3 Standard",
+      "[Amazon Simple Storage Service (S3)] Field not found: Data Transfer"
+    ]
+  },
+  {
+    "serviceName": "Amazon Elastic Block Store (EBS)",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Elastic File System (EFS)",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon RDS for MySQL",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon RDS for PostgreSQL",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon DynamoDB",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Aurora MySQL-Compatible",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon ElastiCache",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon CloudFront",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Route 53",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Virtual Private Cloud (VPC)",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Elastic Load Balancing",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Simple Queue Service (SQS)",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Simple Notification Service (SNS)",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon EventBridge",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon CloudWatch",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "AWS Key Management Service",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "AWS Secrets Manager",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon Bedrock",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  },
+  {
+    "serviceName": "Amazon SageMaker",
+    "status": "PASS",
+    "savedSuccessfully": true,
+    "warnings": []
+  }
+]

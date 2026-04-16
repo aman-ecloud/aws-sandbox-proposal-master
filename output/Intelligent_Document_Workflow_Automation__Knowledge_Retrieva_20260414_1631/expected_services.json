@@ -1,0 +1,10 @@
+[
+  "Amazon Simple Storage Service (S3)",
+  "Amazon Textract",
+  "Amazon Comprehend",
+  "AWS Lambda",
+  "Amazon API Gateway",
+  "Amazon DynamoDB",
+  "Amazon OpenSearch Service",
+  "Amazon CloudWatch"
+]

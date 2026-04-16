@@ -1,0 +1,1235 @@
+[
+  {
+    "serviceName": "AWS Amplify",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/Amplify",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "Select build instance size",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Standard (8 GB Memory, 4 vCPUs)",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of build minutes Value",
+        "ariaLabel": "Number of build minutes Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Unit",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "per month",
+        "pricingImpact": false
+      },
+      {
+        "label": "Data stored per month Value",
+        "ariaLabel": "Data stored per month Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Data served per month Value",
+        "ariaLabel": "Data served per month Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of SSR requests Value",
+        "ariaLabel": "Number of SSR requests Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Duration of each request (in ms) Enter duration in ms",
+        "ariaLabel": "Duration of each request (in ms) Enter duration in ms",
+        "type": "text",
+        "defaultValue": "500",
+        "pricingImpact": true
+      },
+      {
+        "label": "Do you want to enable Web Application Firewall?",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "No",
+        "pricingImpact": false
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ],
+      "dropdown_2": [
+        "Standard (8 GB Memory, 4 vCPUs)Standard (8 GB Memory, 4 vCPUs)",
+        "Large (16 GB Memory, 8 vCPUs)",
+        "X-Large (72 GB Memory, 36 vCPUs)"
+      ],
+      "dropdown_3": [
+        "per minute",
+        "per hour",
+        "per day",
+        "per monthper month"
+      ],
+      "dropdown_4": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_5": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_6": [
+        "per minute",
+        "per hourper hour",
+        "per day",
+        "per month"
+      ],
+      "dropdown_7": [
+        "Yes",
+        "NoNo"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS App Runner",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/apprunner",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "Container compute size",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "1 vCPU",
+        "pricingImpact": true
+      },
+      {
+        "label": "Container memory size",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "2 GB",
+        "pricingImpact": true
+      },
+      {
+        "label": "Concurrency Enter the number of requests per second",
+        "ariaLabel": "Concurrency Enter the number of requests per second",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Minimum provisioned container instances",
+        "ariaLabel": "Minimum provisioned container instances",
+        "type": "text",
+        "defaultValue": "1",
+        "pricingImpact": true
+      },
+      {
+        "label": "Peak traffic hours Enter number of hours per day",
+        "ariaLabel": "Peak traffic hours Enter number of hours per day",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of requests during peak traffic (requests/second) Enter number of requests received per second",
+        "ariaLabel": "Number of requests during peak traffic (requests/second) Enter number of requests received per second",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of requests during off-peak traffic (requests/second) Enter number of requests received per second",
+        "ariaLabel": "Number of requests during off-peak traffic (requests/second) Enter number of requests received per second",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Auto deployment",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "No",
+        "pricingImpact": false
+      },
+      {
+        "label": "Build on App Runner",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "No",
+        "pricingImpact": false
+      },
+      {
+        "label": "Code deployments per month Enter number of code deployments per month",
+        "ariaLabel": "Code deployments per month Enter number of code deployments per month",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Average build time (minutes) Enter average build time for your application",
+        "ariaLabel": "Average build time (minutes) Enter average build time for your application",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Data transfer from",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Data transfer from",
+        "pricingImpact": true
+      },
+      {
+        "label": "Enter Amount Enter amount",
+        "ariaLabel": "Enter Amount Enter amount",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Data amount",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "TB per month",
+        "pricingImpact": true
+      },
+      {
+        "label": "Data transfer to",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Data transfer to",
+        "pricingImpact": true
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ],
+      "dropdown_2": [
+        "0.25 vCPU",
+        "0.5 vCPU",
+        "1 vCPU1 vCPU",
+        "2 vCPU",
+        "4 vCPU"
+      ],
+      "dropdown_3": [
+        "2 GB2 GB",
+        "3 GB",
+        "4 GB"
+      ],
+      "dropdown_4": [
+        "Yes",
+        "NoNo"
+      ],
+      "dropdown_5": [
+        "Yes",
+        "NoNo"
+      ],
+      "dropdown_6": [
+        "Internet (free)Internet (free)",
+        "All other regions (free)"
+      ],
+      "dropdown_7": [
+        "GB per month",
+        "TB per monthTB per month"
+      ],
+      "dropdown_8": [
+        "GB per month",
+        "TB per monthTB per month"
+      ],
+      "dropdown_9": [
+        "Internet (0.05 USD - 0.09 USD per GB)Internet (0.05 USD - 0.09 USD per GB)",
+        "AWS European Sovereign Cloud (Germany) (0.05 USD per GB)",
+        "Asia Pacific (Thailand) (0.08 USD per GB)",
+        "Senegal (Dakar) (0.05 USD per GB)",
+        "US East (Lenexa) (0.01 USD per GB)",
+        "US East (N. Virginia) (0.01 USD per GB)",
+        "US East (Verizon) - Atlanta (0.01 USD per GB)",
+        "US East (Verizon) - Nashville (0.01 USD per GB)",
+        "US East (Verizon) - Tampa (0.01 USD per GB)",
+        "US East (Verizon) - Boston (0.01 USD per GB)",
+        "US East (Verizon) - Charlotte (0.01 USD per GB)",
+        "US East (Verizon) - Chicago (0.01 USD per GB)",
+        "US East (Verizon) - Dallas (0.01 USD per GB)",
+        "US East (Verizon) - Detroit (0.01 USD per GB)",
+        "US East (Verizon) - Houston (0.01 USD per GB)",
+        "US East (Verizon) - Miami (0.01 USD per GB)",
+        "US East (Verizon) - Minneapolis (0.01 USD per GB)",
+        "US East (Verizon) - New York (0.01 USD per GB)",
+        "US East (Verizon) - Washington DC (0.01 USD per GB)",
+        "All other regions (0.02 USD per GB)"
+      ],
+      "dropdown_10": [
+        "GB per month",
+        "TB per monthTB per month"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS AppFabric",
+    "skipped": true,
+    "reason": "configure button not found",
+    "url": "https://calculator.aws/#/addService"
+  },
+  {
+    "serviceName": "AWS AppSync",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/appSync",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "(unlabeled)",
+        "ariaLabel": "",
+        "type": "checkbox",
+        "defaultValue": "on",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number Of Subscribed Clients",
+        "ariaLabel": "Number Of Subscribed Clients",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Average Active Duration per Subscribed Clients Value",
+        "ariaLabel": "Average Active Duration per Subscribed Clients Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Unit",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "per month",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of Inbound Messages (i.e. GraphQL Mutations) Value",
+        "ariaLabel": "Number of Inbound Messages (i.e. GraphQL Mutations) Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of Outbound Messages Value",
+        "ariaLabel": "Number of Outbound Messages Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Cache memory size (GB)",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "cache.small (vCPU: 1, Memory: 1.55 GB)",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of connected clients Enter the number of connected clients",
+        "ariaLabel": "Number of connected clients Enter the number of connected clients",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Inbound messages published from backend Value",
+        "ariaLabel": "Inbound messages published from backend Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Inbound messages published per client Value",
+        "ariaLabel": "Inbound messages published per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Oubound messages received per client Value",
+        "ariaLabel": "Oubound messages received per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Connection requests per client Value",
+        "ariaLabel": "Connection requests per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Subscription requests per client Value",
+        "ariaLabel": "Subscription requests per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Unsubscribe requests per client Value",
+        "ariaLabel": "Unsubscribe requests per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Event handler invocations Value",
+        "ariaLabel": "Event handler invocations Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Connection minutes per client Value",
+        "ariaLabel": "Connection minutes per client Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ],
+      "dropdown_3": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ],
+      "dropdown_4": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ],
+      "dropdown_5": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ],
+      "dropdown_6": [
+        "cache.small (vCPU: 1, Memory: 1.55 GB)cache.small (vCPU: 1, Memory: 1.55 GB)",
+        "cache.medium (vCPU: 2, Memory: 3.22 GB)",
+        "cache.large (vCPU: 2, Memory: 12.3 GB)",
+        "cache.xlarge (vCPU: 4, Memory: 25.05 GB)",
+        "cache.2xlarge (vCPU: 8, Memory: 50.47 GB)",
+        "cache.4xlarge (vCPU: 16, Memory: 101.38 GB)",
+        "cache.8xlarge (vCPU: 32, Memory: 203.26 GB)",
+        "cache.12xlarge (vCPU: 48, Memory: 317.77 GB)"
+      ],
+      "dropdown_12": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_13": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_14": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_15": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_16": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_17": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_18": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ],
+      "dropdown_19": [
+        "per second",
+        "per minute",
+        "per hour",
+        "per day",
+        "per week",
+        "per monthper month",
+        "thousand per month",
+        "million per month",
+        "billion per month"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS Application Migration Service",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/appmigrationsvc",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of server/s Number",
+        "ariaLabel": "Number of server/s Number",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of hour/s per server Number",
+        "ariaLabel": "Number of hour/s per server Number",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": true
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS Audit Manager",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/awsAuditManager",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of accounts",
+        "ariaLabel": "Number of accounts",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Resource type",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "EC2 instances",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of resources per account",
+        "ariaLabel": "Number of resources per account",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of configuration snapshots (API calls) Value",
+        "ariaLabel": "Number of configuration snapshots (API calls) Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Unit",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "per month",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of configuration changes/user activity logs (Cloudtrail) Value",
+        "ariaLabel": "Number of configuration changes/user activity logs (Cloudtrail) Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Number of compliance checks (Security Hub, Config) Value",
+        "ariaLabel": "Number of compliance checks (Security Hub, Config) Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ],
+      "dropdown_2": [
+        "EC2 instancesEC2 instances",
+        "RDS instances",
+        "S3 buckets",
+        "VPC subnets",
+        "Other resource types"
+      ],
+      "dropdown_3": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ],
+      "dropdown_4": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ],
+      "dropdown_5": [
+        "per day",
+        "per week",
+        "per monthper month"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS B2B Data Interchange",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/b2b-data-interchange",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of partnerships",
+        "ariaLabel": "Number of partnerships",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Number of transformation steps per month",
+        "ariaLabel": "Number of transformation steps per month",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS Backup",
+    "skipped": false,
+    "url": "https://calculator.aws/#/createCalculator/Backup",
+    "fields": [
+      {
+        "label": "Description - optional",
+        "ariaLabel": "Description - optional",
+        "type": "text",
+        "defaultValue": "",
+        "pricingImpact": false
+      },
+      {
+        "label": "Choose a location typeInfo:",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "Region",
+        "pricingImpact": false
+      },
+      {
+        "label": "(unlabeled)",
+        "ariaLabel": "",
+        "type": "checkbox",
+        "defaultValue": "on",
+        "pricingImpact": false
+      },
+      {
+        "label": "Amount of primary data to be backed up Value",
+        "ariaLabel": "Amount of primary data to be backed up Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Unit",
+        "ariaLabel": "",
+        "type": "select/dropdown",
+        "defaultValue": "GB",
+        "pricingImpact": false
+      },
+      {
+        "label": "Estimated annual increase in primary data (%)",
+        "ariaLabel": "Estimated annual increase in primary data (%)",
+        "type": "number",
+        "defaultValue": "0",
+        "pricingImpact": true
+      },
+      {
+        "label": "Estimated daily change of primary data (%)",
+        "ariaLabel": "Estimated daily change of primary data (%)",
+        "type": "number",
+        "defaultValue": "0",
+        "pricingImpact": true
+      },
+      {
+        "label": "Hourly backups warm retention period Value",
+        "ariaLabel": "Hourly backups warm retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Daily backups warm retention period Value",
+        "ariaLabel": "Daily backups warm retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Weekly backups warm retention period Value",
+        "ariaLabel": "Weekly backups warm retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Monthly backups warm retention period Value",
+        "ariaLabel": "Monthly backups warm retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Hourly backups cold retention period Value",
+        "ariaLabel": "Hourly backups cold retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Daily backups cold retention period Value",
+        "ariaLabel": "Daily backups cold retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Weekly backups cold retention period Value",
+        "ariaLabel": "Weekly backups cold retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Monthly backups cold retention period Value",
+        "ariaLabel": "Monthly backups cold retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      },
+      {
+        "label": "Continuous backups warm retention period Value",
+        "ariaLabel": "Continuous backups warm retention period Value",
+        "type": "number",
+        "defaultValue": "",
+        "pricingImpact": true
+      }
+    ],
+    "optionMap": {
+      "dropdown_1": [
+        "RegionRegion",
+        "Local Zone"
+      ],
+      "dropdown_11": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_12": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_13": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_14": [
+        "WeeksWeeks"
+      ],
+      "dropdown_15": [
+        "MonthsMonths"
+      ],
+      "dropdown_16": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_17": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_18": [
+        "WeeksWeeks"
+      ],
+      "dropdown_19": [
+        "MonthsMonths"
+      ],
+      "dropdown_29": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_30": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_31": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_32": [
+        "WeeksWeeks"
+      ],
+      "dropdown_33": [
+        "MonthsMonths"
+      ],
+      "dropdown_34": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_35": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_36": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_37": [
+        "WeeksWeeks"
+      ],
+      "dropdown_38": [
+        "MonthsMonths"
+      ],
+      "dropdown_39": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_40": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_41": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_42": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_43": [
+        "WeeksWeeks"
+      ],
+      "dropdown_44": [
+        "MonthsMonths"
+      ],
+      "dropdown_45": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_46": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_47": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_48": [
+        "WeeksWeeks"
+      ],
+      "dropdown_49": [
+        "MonthsMonths"
+      ],
+      "dropdown_50": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_51": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_52": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_53": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_54": [
+        "WeeksWeeks"
+      ],
+      "dropdown_55": [
+        "MonthsMonths"
+      ],
+      "dropdown_56": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_57": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_58": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_59": [
+        "WeeksWeeks"
+      ],
+      "dropdown_60": [
+        "MonthsMonths"
+      ],
+      "dropdown_61": [
+        "MonthsMonths"
+      ],
+      "dropdown_62": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_63": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_64": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_65": [
+        "WeeksWeeks"
+      ],
+      "dropdown_66": [
+        "MonthsMonths"
+      ],
+      "dropdown_67": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_68": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_69": [
+        "WeeksWeeks"
+      ],
+      "dropdown_70": [
+        "MonthsMonths"
+      ],
+      "dropdown_71": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_72": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_73": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_74": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_75": [
+        "WeeksWeeks"
+      ],
+      "dropdown_76": [
+        "MonthsMonths"
+      ],
+      "dropdown_77": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_78": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_79": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_80": [
+        "WeeksWeeks"
+      ],
+      "dropdown_81": [
+        "MonthsMonths"
+      ],
+      "dropdown_82": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_83": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_84": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_85": [
+        "WeeksWeeks"
+      ],
+      "dropdown_86": [
+        "MonthsMonths"
+      ],
+      "dropdown_87": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_88": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_89": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_90": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_91": [
+        "WeeksWeeks"
+      ],
+      "dropdown_92": [
+        "MonthsMonths"
+      ],
+      "dropdown_93": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_94": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_95": [
+        "WeeksWeeks"
+      ],
+      "dropdown_96": [
+        "MonthsMonths"
+      ],
+      "dropdown_97": [
+        "MB",
+        "GBGB",
+        "TB"
+      ],
+      "dropdown_98": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_99": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_100": [
+        "WeeksWeeks"
+      ],
+      "dropdown_101": [
+        "MonthsMonths"
+      ],
+      "dropdown_102": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_103": [
+        "DaysDays",
+        "Weeks",
+        "Months"
+      ],
+      "dropdown_104": [
+        "WeeksWeeks"
+      ],
+      "dropdown_105": [
+        "MonthsMonths"
+      ]
+    }
+  },
+  {
+    "serviceName": "AWS Billing Conductor",
+    "skipped": true,
+    "reason": "configure button not found",
+    "url": "https://calculator.aws/#/addService"
+  },
+  {
+    "serviceName": "AWS Budgets",
+    "skipped": true,
+    "reason": "configure button not found",
+    "url": "https://calculator.aws/#/addService"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "url": "https://calculator.aws/#/createCalculator/SageMaker",
+  "warnings": [
+    {
+      "type": "warning",
+      "text": "[Amazon SageMaker] Field not found: Choose a Region"
+    }
+  ],
+  "messages": [
+    {
+      "type": "log",
+      "text": "[Amazon SageMaker] Starting with config: {description: SMB SageMaker baseline, locationType: Region, region: US East (N. Virginia), enableSageMakerStudioNotebooks: false, studioNotebookDataScientists: 1}"
+    },
+    {
+      "type": "warning",
+      "text": "[Amazon SageMaker] Field not found: Choose a Region"
+    },
+    {
+      "type": "log",
+      "text": "[Amazon SageMaker] Saved successfully!"
+    }
+  ],
+  "rowCount": 0,
+  "hasSavedLog": false
+}

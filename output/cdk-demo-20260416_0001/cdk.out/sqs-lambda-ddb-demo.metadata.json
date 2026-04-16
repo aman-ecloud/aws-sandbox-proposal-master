@@ -1,0 +1,93 @@
+{
+  "/sqs-lambda-ddb-demo": [
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "Environment",
+          "value": "demo"
+        },
+        {
+          "key": "ManagedBy",
+          "value": "cdk-demo"
+        },
+        {
+          "key": "Project",
+          "value": "sqs-lambda-ddb-demo"
+        }
+      ]
+    }
+  ],
+  "/sqs-lambda-ddb-demo/QueueUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "QueueUrl"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/TableName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TableName"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/LambdaArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LambdaArn"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ProcessingQueue/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ProcessingQueue6DC600C3"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ResultsTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ResultsTableF0B5BF22"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ProcessorFunction/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ProcessorFunctionE1AA307D"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ProcessorFunction/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ProcessorFunctionServiceRole6E94BAC6"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ProcessorFunction/SqsEventSource:sqslambdaddbdemoProcessingQueue46A3D89B/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ProcessorFunctionSqsEventSourcesqslambdaddbdemoProcessingQueue46A3D89B953FF88A"
+    }
+  ],
+  "/sqs-lambda-ddb-demo/ProcessorFunction/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ProcessorFunctionServiceRoleDefaultPolicyFC7E6FD8"
+    }
+  ]
+}
