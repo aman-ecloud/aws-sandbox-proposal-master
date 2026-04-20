@@ -94,20 +94,76 @@ If `aws-cdk-lib` is already installed and CDK CLI is present, the output is inst
 
 **Do not read any existing files in the `output/` folder.** All patterns, templates, and conventions are defined in this SKILL.md — use them directly without reading prior runs for reference.
 
-If deploying from a proposal: use `output/{ProjectName}/cdk/`
+### Derive the stack name, qualifier, and folder from the services
 
-If standalone: create `output/cdk-demo-{timestamp}/` where timestamp is `YYYYMMDD_HHMM`:
+Before writing any files, compute three values from the actual services in the request. These must be consistent across all four files.
+
+#### Step A — Build the abbreviation list
+
+Map each requested service to its abbreviation using this table. Order follows the data flow described in the request (source → processor → sink).
+
+| Service | PascalCase abbrev | Qualifier char(s) |
+|---|---|---|
+| AWS Lambda | `Lambda` | `l` |
+| Amazon DynamoDB | `Dynamo` | `dy` |
+| Amazon SQS | `Sqs` | `sq` |
+| Amazon SNS | `Sns` | `sn` |
+| Amazon S3 | `S3` | `s3` |
+| Amazon API Gateway | `ApiGw` | `ag` |
+| Amazon Kinesis | `Kinesis` | `ki` |
+| Amazon EventBridge | `Events` | `ev` |
+| Amazon RDS | `Rds` | `rd` |
+| Amazon ElastiCache | `Cache` | `ec` |
+| Amazon EKS | `Eks` | `ek` |
+| AWS Fargate | `Fargate` | `fg` |
+| Amazon CloudFront | `Cdn` | `cf` |
+| AWS Step Functions | `Sfn` | `sf` |
+| Amazon Cognito | `Cognito` | `co` |
+| Amazon OpenSearch | `Search` | `os` |
+| AWS Secrets Manager | `Secrets` | `sc` |
+| Amazon Redshift | `Redshift` | `rs` |
+| Amazon VPC | `Vpc` | `vp` |
+| Amazon CloudWatch | `Cw` | `cw` |
+| AWS IoT Core | `Iot` | `io` |
+| Amazon Bedrock | `Bedrock` | `br` |
+| Amazon ECS | `Ecs` | `cs` |
+| AWS Glue | `Glue` | `gl` |
+| Amazon MSK | `Msk` | `mk` |
+
+**If a service is not in this table:** use the first meaningful word of its name in PascalCase as the abbreviation, and its first two lowercase letters as the qualifier chars.
+
+#### Step B — Derive the three values
+
+**Stack name** = abbreviations joined (PascalCase) + `Demo`. Use at most 4 services in the name; if there are more, use the 3 most architecturally significant ones.
+
+**Qualifier** = qualifier chars joined (lowercase, no separator), truncated so total length is 6–9 chars. Must be alphanumeric only.
+
+**Folder** = stack name in kebab-case (replace PascalCase word boundaries with hyphens, lowercase) + `-` + timestamp `YYYYMMDD_HHMM`.
+
+#### Step B — Examples
+
+| Request | Stack name | Qualifier | Folder prefix |
+|---|---|---|---|
+| SQS → Lambda → DynamoDB | `SqsLambdaDynamoDemo` | `sqldydemo` | `sqs-lambda-dynamo-demo-` |
+| API Gateway → Lambda → DynamoDB | `ApiGwLambdaDynamoDemo` | `agldydemo` | `apigw-lambda-dynamo-demo-` |
+| S3 → Lambda → SNS | `S3LambdaSnsDemo` | `s3lsndemo` | `s3-lambda-sns-demo-` |
+| Kinesis → Lambda → S3 → CloudWatch | `KinesisLambdaS3Demo` | `kils3demo` | `kinesis-lambda-s3-demo-` |
+| EventBridge → Step Functions → Lambda | `EventsSfnLambdaDemo` | `evsfldem` | `events-sfn-lambda-demo-` |
+| API Gateway → Cognito → Lambda → RDS | `ApiGwCognitoLambdaDemo` | `agcoldemo` | `apigw-cognito-lambda-demo-` |
+
+Both **stack name** and **qualifier** must be **identical** in `app.py` and `deploy.py`.
+
+#### Step C — Get the timestamp and create the folder
 
 ```bash
-python -c "from datetime import datetime; print('cdk-demo-' + datetime.now().strftime('%Y%m%d_%H%M'))"
+python -c "from datetime import datetime; print(datetime.now().strftime('%Y%m%d_%H%M'))"
 ```
 
-Create the folder:
+Combine: `output/{folder-prefix}{timestamp}/` — e.g. `output/sqs-lambda-dynamo-demo-20260420_1430/`
+
 ```bash
 mkdir -p output/{folder}/
 ```
-
-All three files go in this folder.
 
 ---
 
@@ -273,27 +329,27 @@ Write the complete `stack.py` to `output/{folder}/stack.py`.
 
 ## Step 6 — Write `app.py`
 
+Use the **actual** stack name, qualifier, and region derived in Step 3. Do not copy the values shown in the examples literally — compute them fresh for every run.
+
 ```python
 import aws_cdk as cdk
 from stack import DemoStack
 
-QUALIFIER = "{8-char-alphanumeric-derived-from-stack-name}"  # must match deploy.py
+QUALIFIER = "<derived-qualifier>"    # computed in Step 3B — e.g. "agldydemo" for ApiGw+Lambda+Dynamo
 
 app = cdk.App()
 
-stack = DemoStack(app, "{stack-name}",
-    env=cdk.Environment(region="{region_code}"),
+stack = DemoStack(app, "<DerivedStackName>",     # computed in Step 3B — e.g. "ApiGwLambdaDynamoDemo"
+    env=cdk.Environment(region="<region-code>"), # e.g. "us-east-1"
     synthesizer=cdk.DefaultStackSynthesizer(qualifier=QUALIFIER),
 )
 
 cdk.Tags.of(stack).add("Environment", "demo")
 cdk.Tags.of(stack).add("ManagedBy", "cdk-demo")
-cdk.Tags.of(stack).add("Project", "{stack-name}")
+cdk.Tags.of(stack).add("Project", "<DerivedStackName>")  # same as stack name above
 
 app.synth()
 ```
-
-The `QUALIFIER` value must be 1–10 lowercase alphanumeric characters, unique to this demo. Derive it from the stack name, e.g. `"sqsdmd123"` for an SQS+Lambda+DynamoDB stack. Use the same value in `deploy.py`.
 
 Write to `output/{folder}/app.py`.
 
@@ -316,10 +372,10 @@ A dialog box pops up for credentials — held in memory only, never written to d
 import json, os, shutil, subprocess, sys
 from pathlib import Path
 
-REGION         = "{region_code}"
-STACK          = "{stack-name}"
-QUALIFIER      = "{8-char-alphanumeric-derived-from-stack-name}"
-TOOLKIT_STACK  = "CDKToolkitDemo"   # isolated — does not touch the default CDKToolkit
+REGION         = "<region-code>"          # computed in Step 3 — e.g. "us-east-1", "ap-south-1"
+STACK          = "<DerivedStackName>"    # computed in Step 3B — e.g. "ApiGwLambdaDynamoDemo"
+QUALIFIER      = "<derived-qualifier>"   # computed in Step 3B — e.g. "agldydemo"
+TOOLKIT_STACK  = "CDKToolkitDemo"        # fixed — isolated bootstrap, does not touch default CDKToolkit
 LOCK_FILE      = Path(__file__).parent / ".deploy.lock"
 
 if sys.platform == "win32":
@@ -661,6 +717,30 @@ To tear down:
 
 ---
 
+## Execution pitfalls — read before running Steps 8 and 9
+
+These are classes of mistakes to avoid during execution. They are general principles, not tied to specific services.
+
+**1. Judge success by exit code, not by stderr content.**
+A process that exits 0 succeeded — even if it printed warnings, deprecation notices, or compatibility messages to stderr. Only a non-zero exit code means failure. Never re-run or abort a command solely because its stderr output looks noisy. Check the exit code explicitly before deciding what to do next.
+
+**2. A waiting process is not a stuck process.**
+If a running process has not exited and has not printed an error, it is working. It may be waiting for user input (the credential dialog), waiting for a remote API, or processing a long operation. Do not interrupt it, do not send keyboard input to it, and do not start a second copy. Wait for it to exit naturally.
+
+**3. Never interact with a terminal that has an active foreground process.**
+Sending any input — including diagnostic commands, variable assignments, or key presses — to a terminal where a foreground process is running will corrupt that process or kill it. Use a separate terminal for any monitoring or diagnostics while a deploy is in progress.
+
+**4. Credentials exist only in the process that received them.**
+`deploy.py` stores credentials in its own in-memory environment. No other shell, terminal session, or tool call shares that environment. Do not attempt AWS CLI calls from a different shell to verify deployment progress — the call will fail with an auth error because those credentials are not available there. Monitor progress through process state and the deploy terminal's own output only.
+
+**5. Check for reserved names before using shell variables.**
+Every shell has built-in read-only variables. Before assigning a variable in any shell script or terminal command, confirm the name is not reserved. If a variable assignment fails with "read-only" or "constant", rename the variable immediately — use a descriptive prefix (e.g. `deployPid`, `lockFileContent`) to avoid collisions with shell builtins.
+
+**6. Distinguish a transient failure from a real failure.**
+If a command fails, read the full error message before deciding what to do. A warning printed to stderr that exits 0 is not a failure. A network timeout that can be retried is not a permanent failure. A syntax error in generated code is a real failure that requires a fix before retrying. Match the response to the actual cause.
+
+---
+
 ## Rules
 
 - **Execute everything yourself — the user runs nothing.** The user's only action is entering credentials in the GUI dialog. Writing files and then stopping is a failure. Listing "next steps" is a failure. The skill is complete only after `deploy.py` exits 0.
@@ -672,7 +752,6 @@ To tear down:
 - **Never ask for credentials in the chat.** `deploy.py` shows a GUI dialog box — credentials never appear in the conversation.
 - **Never write credentials to any file** — not `cdk.json`, not `app.py`, not `.env`, nowhere.
 - **Never kill `deploy.py` while it is running.** The GUI dialog waiting for input is normal — do not interrupt it. Deployment after credential submission takes several minutes.
-- **Run `python deploy.py` via a tool call** after `cdk ls` passes. The dialog handles credential collection automatically.
 - **Validate with `cdk ls` first** before running deploy.py — don't waste the user's time on a broken stack.
 - **Demo sizes only.** Do not use production or calculator values for CDK resources.
 - **Use L2 constructs and `.grant_*()` methods** wherever available. Only fall back to L1 (`Cfn*`) when no L2 exists for that service.
