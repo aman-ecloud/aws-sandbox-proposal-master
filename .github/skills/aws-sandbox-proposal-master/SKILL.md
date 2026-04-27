@@ -34,7 +34,7 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 
 Run every step in order. Do not stop in the middle to ask what to do next. Do not skip steps.
 
-**Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7**
+**Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7 → Step 8**
 
 - **Step 3B (AWS Calculator):** Open the browser, add all services, get a real share link. Do not deliver without it. Do not leave `calculator_link` blank. If it is blank, `generate_proposal.py` will fail and you cannot move forward — so finish Step 3B first.
 - **Do not reuse an old `context.json`.** Every run creates a new folder with a fresh `context.json`.
@@ -58,15 +58,17 @@ This project is implemented in the Copilot SKILL workflow style:
 
 The `.github/skills/aws-sandbox-proposal-master/scripts/calculator/` folder contains **ready-to-use browser console scripts** for the most commonly used AWS services. These scripts were generated from live DOM inspection of the AWS Pricing Calculator and are designed to auto-fill configuration forms accurately.
 
-**Available scripts (32 services):**
-Amazon EC2, Amazon EKS, Amazon EFS, Amazon EBS, Amazon S3, Amazon RDS for MySQL, Amazon RDS for PostgreSQL, Amazon Aurora MySQL-Compatible, Amazon DynamoDB, Amazon ElastiCache, Amazon CloudFront, Amazon CloudWatch, Amazon Route 53, Amazon VPC, Amazon SageMaker, Amazon Bedrock, Amazon SNS, Amazon SQS, Amazon EventBridge, Amazon Lightsail, AWS Lambda, AWS Fargate, AWS KMS, AWS Secrets Manager, Elastic Load Balancing, AWS Amplify, AWS App Runner, AWS AppSync, AWS Application Migration Service, AWS Audit Manager, AWS Backup, and more.
+**Available scripts (38 services — self-growing):**
+Amazon EC2, Amazon EKS, Amazon EFS, Amazon EBS, Amazon S3, Amazon RDS for MySQL, Amazon RDS for PostgreSQL, Amazon Aurora MySQL-Compatible, Amazon DynamoDB, Amazon ElastiCache, Amazon CloudFront, Amazon CloudWatch, Amazon Route 53, Amazon VPC, Amazon SageMaker, Amazon Bedrock, Amazon SNS, Amazon SQS, Amazon EventBridge, Amazon Lightsail, AWS Lambda, AWS Fargate, AWS KMS, AWS Secrets Manager, Elastic Load Balancing, AWS Amplify, AWS App Runner, AWS AppSync, AWS Application Migration Service, AWS Audit Manager, AWS Backup, Amazon Kinesis Data Streams, Amazon API Gateway, AWS IoT Core, Amazon Athena, Amazon Cognito, AWS IAM Access Analyzer, and more.
+
+**This list grows automatically.** Every time a GROUP B service is successfully added via manual Playwright, a new `.js` script is written to `scripts/calculator/` and this list is updated. On the next run that service becomes GROUP A.
 
 ## How to add services in Step 3B
 
 For each service in `service_list`, check whether a pre-built script exists:
 
 - **Script exists** at `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ServiceName}.js` → **GROUP A** — use script injection (described below).
-- **No script** → **GROUP B** — use manual Playwright form fill (`references/AWS_CALCULATOR_GUIDE.md`).
+- **No script** → **GROUP B** — use manual Playwright form fill (`references/AWS_CALCULATOR_GUIDE.md`), then **immediately write a new `.js` script** for that service so future runs can use GROUP A injection (see "After GROUP B: Write the script" below).
 
 ### GROUP A — script injection (the only correct approach for these services)
 
@@ -111,6 +113,211 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
 - Any code that replicates what the pre-built script already does internally
 
 **Do NOT use** `discover_and_generate.js`, `validate_scripts.js`, or `validate_console_runs.js` — those are tooling scripts, not calculator automation scripts.
+
+### After GROUP B: Write the script for next time
+
+**Every time you successfully add a GROUP B service via manual Playwright, you must immediately write a new `.js` file for it** at:
+
+```
+.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ExactServiceName}.js
+```
+
+Where `{ExactServiceName}` is the exact name from `assets/aws_services.json` (the same name used to search in the calculator), with spaces replaced by underscores — e.g. `Amazon_Kinesis_Data_Streams.js`.
+
+#### What the script must do
+
+The script must replicate — using React synthetic events — exactly the same steps you just performed manually with Playwright. It must:
+
+1. Search for the service by name
+2. Click Configure
+3. Set the region
+4. Fill every numeric or dropdown field you touched
+5. Click "Save and add service"
+6. Print `[ServiceName] Saved successfully!` on success
+
+#### Script template — use this structure exactly
+
+The structure must match the existing scripts precisely. Read `scripts/calculator/AWS Lambda.js` as the reference — every generated script follows the same 4-phase pattern with the same helper set.
+
+```javascript
+/**
+ * {Exact Service Name} - AWS Pricing Calculator Script
+ *
+ * Service name  : {Exact Service Name}
+ * Configure URL : https://calculator.aws/#/createCalculator/{ServiceSlug}
+ *
+ * Auto-generated after GROUP B manual fill on {date}.
+ * Inject via page.evaluate() — do NOT use require/fs.
+ */
+
+(async function configure{ShortName}(params) {
+
+  // -- DEFAULT CONFIGURATION -------------------------------------------------
+  // Every field touched during the manual GROUP B fill appears here.
+  // Defaults are realistic mid-range values for a medium-scale workload.
+  // PRICING IMPACT: true = changing this value changes the monthly estimate.
+  const config = {
+    // Region | PRICING IMPACT: true
+    region: params?.region ?? 'Asia Pacific (Mumbai)',
+
+    // {Field description} | PRICING IMPACT: {true/false}
+    {paramName}: params?.{paramName} ?? {sensibleDefault},
+
+    // Add one entry per field you filled during the manual run.
+    // Use the same naming convention as AWS Lambda.js:
+    //   numberOfX, durationMs, storageGb, requestsPerMonth, retentionHours, etc.
+    // Choose defaults that represent a realistic SMB/mid-scale workload —
+    // not minimal (1 request/month) and not production-max.
+    // Examples by field type:
+    //   request counts  → 1_000_000 to 10_000_000 per month
+    //   data sizes      → 100 GB
+    //   durations       → realistic for the service (e.g. 200ms for Lambda, 24h for Kinesis retention)
+    //   instance counts → 1 or 2 nodes
+    //   storage         → 100–500 GB
+  };
+
+  console.log('[{ShortName}] Starting with config:', config);
+
+  // -- HELPERS ---------------------------------------------------------------
+
+  function jitter(min = 80, max = 350) {
+    return new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min + 1)) + min));
+  }
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function scrollTo(el) { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  function setInputValue(el, value) {
+    if (!el) return;
+    scrollTo(el);
+    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
+    setter.call(el, String(value));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  async function waitForElement(selector, timeout = 12000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      const el = document.querySelector(selector);
+      if (el) return el;
+      await wait(300);
+    }
+    console.warn('[{ShortName}] waitForElement timed out:', selector);
+    return null;
+  }
+
+  function findInputsByAriaContains(text) {
+    return [...document.querySelectorAll('input, textarea')]
+      .filter(el => (el.getAttribute('aria-label') || '').includes(text));
+  }
+
+  async function setFieldByAria(text, value, index = 0) {
+    const all = findInputsByAriaContains(text);
+    const el = all[index] || null;
+    if (!el) { console.warn('[{ShortName}] Field not found:', text, 'index', index); return; }
+    await jitter();
+    setInputValue(el, value);
+    await jitter(100, 300);
+  }
+
+  async function clickRadioByExactAria(text) {
+    const radio = [...document.querySelectorAll('input[type="radio"]')]
+      .find(r => (r.getAttribute('aria-label') || '') === text);
+    if (!radio) { console.warn('[{ShortName}] Radio not found:', text); return; }
+    if (!radio.checked) { scrollTo(radio); await jitter(); radio.click(); await jitter(100, 300); }
+  }
+
+  // -- PHASE 1 : NAVIGATE ----------------------------------------------------
+
+  if (!window.location.hash.includes('/addService') &&
+      !window.location.hash.includes('/createCalculator/{ServiceSlug}')) {
+    window.location.hash = '#/addService';
+    await wait(2500);
+  }
+
+  // -- PHASE 2 : SEARCH AND CONFIGURE ----------------------------------------
+
+  if (window.location.hash.includes('/addService')) {
+    const searchAllRadio = [...document.querySelectorAll('input[type="radio"]')]
+      .find(r => (r.closest('label, div')?.textContent || '').includes('Search all services'));
+    if (searchAllRadio && !searchAllRadio.checked) {
+      scrollTo(searchAllRadio); await jitter(200, 400); searchAllRadio.click(); await wait(800);
+    }
+
+    const searchBox = await waitForElement(
+      'input[placeholder="Search for a service"], input[aria-label="Find Service"], input[role="searchbox"]'
+    );
+    if (searchBox) {
+      scrollTo(searchBox); await jitter(200, 500);
+      setInputValue(searchBox, '{Exact Service Name}');
+      await wait(1800);
+    }
+
+    const configBtn = [...document.querySelectorAll('button')]
+      .find(b => b.textContent.trim() === 'Configure' &&
+                 b.closest('li, article')?.textContent?.includes('{Exact Service Name}'));
+    if (configBtn) {
+      scrollTo(configBtn); await jitter(250, 600); configBtn.click(); await wait(5000);
+    } else {
+      console.warn('[{ShortName}] Configure button not found'); return;
+    }
+  }
+
+  // -- PHASE 3 : FILL FORM ---------------------------------------------------
+  // Use the exact aria-label strings observed during the manual GROUP B fill.
+  // Use setFieldByAria() for numeric inputs, clickRadioByExactAria() for radio buttons.
+  // If a field has multiple inputs with the same aria-label, use the index param.
+
+  await waitForElement('h1, input[aria-label*="Region"]', 15000);
+
+  // Region dropdown — copy the pattern from Amazon DynamoDB.js or Amazon SQS.js
+  // (find the region button, click it, find the option, click it)
+
+  // {Fill each field here, one call per field}
+  await setFieldByAria('{exact aria-label of field 1}', config.{paramName1});
+  await setFieldByAria('{exact aria-label of field 2}', config.{paramName2});
+  // ...
+
+  // -- PHASE 4 : SAVE --------------------------------------------------------
+
+  await jitter(400, 800);
+  const saveBtn = [...document.querySelectorAll('button')]
+    .find(b => b.textContent.trim() === 'Save and add service');
+  if (saveBtn) {
+    scrollTo(saveBtn); await jitter(300, 600);
+    saveBtn.click();
+    console.log('[{ShortName}] Saved successfully!');
+  } else {
+    console.warn('[{ShortName}] Save and add service button not found');
+  }
+
+})({
+  // Override defaults for this specific proposal run.
+  // Only list the params that differ from the defaults above.
+  // Example:
+  //   region: 'US East (N. Virginia)',
+  //   numberOfShards: 5,
+  //   retentionHours: 168,
+});
+```
+
+#### Rules for the generated script
+
+- **Use `params?.field ?? defaultValue`** for every config entry — never `params.field` (crashes if params is undefined) and never a bare literal (makes the value non-overridable)
+- **Defaults must be realistic mid-range values** — not 1 (too minimal to be useful) and not the proposal's production numbers (those belong in the `})({...})` override block at call time). Think: what would a typical SMB workload look like?
+  - Request counts: 1 000 000–10 000 000 per month
+  - Data/storage: 100–500 GB
+  - Durations: realistic for the service (e.g. 200 ms for a Lambda, 24 h for a Kinesis stream retention)
+  - Node/instance counts: 1–2
+- **Use the same helper set** (jitter, wait, scrollTo, setInputValue, waitForElement, findInputsByAriaContains, setFieldByAria, clickRadioByExactAria) — do not invent new helpers; the existing ones cover every case
+- **Use exact aria-label strings** from the live DOM — copy them character-for-character from what you observed during the manual fill; do not paraphrase
+- **The `})({...})` override block at the bottom** is where the proposal's actual values go when the script is injected during a run — leave it with only comments in the generated file; the agent fills it at inject time
+- **Test mentally:** re-read the script after writing and confirm every field touched during the manual fill has a corresponding `setFieldByAria` or `clickRadioByExactAria` call
+
+#### After writing the script
+
+Update the "Available scripts" count/list in this SKILL.md header to include the newly created service, so future runs know it is now GROUP A.
 
 ## When to Use This Skill
 
@@ -191,7 +398,14 @@ Create the subfolder with `mkdir -p output/{ProjectName}` at the start of Step 2
                ▼
 ┌───────────────────────────────────┐
 │  Step 7: Deliver to User          │
-└───────────────────────────────────┘
+└──────────────┬────────────────────┘
+               ▼
+┌────────────────────────────────────────┐
+│  Step 8: Deploy Demo Architecture      │
+│  (aws-cdk-development → CF template    │
+│   → aws cloudformation deploy)         │
+└────────────────────────────────────────┘
+
 ```
 
 ## I/O Contract (All Steps)
@@ -811,6 +1025,160 @@ Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
 
 ---
 
+### Step 8 — Deploy Minimal Demo Architecture
+
+After Step 7 passes, deploy a minimal live demo of the architecture to AWS. **This step is mandatory — do not skip it, do not ask the user if they want to deploy.**
+
+The demo is intentionally small — a fluff stack to prove the services wire together. Its purpose is proof-of-connectivity, not production scale. Use minimal configurations only. Never use proposal calculator numbers here.
+
+#### 8A — Identify the core deployable services
+
+Read `output/{ProjectName}/context.json`. From `sandbox.architecture.applied_services` (or `sandbox.business.service_list` if applied_services is absent), identify the services that form the **main data flow** described in `sandbox.architecture.description`.
+
+Filter to only services that CloudFormation can provision as real resources:
+
+| Deployable via CloudFormation | Skip — API-only, no resource to provision |
+|---|---|
+| Lambda, DynamoDB, S3, SQS, SNS, API Gateway, Kinesis, EventBridge, RDS, ElastiCache, EKS, Fargate, CloudFront, Step Functions, Cognito, OpenSearch, Secrets Manager, Redshift, VPC, CloudWatch, IoT Core, Glue, ECS, MSK | Bedrock, SageMaker, Comprehend, Rekognition, Textract, Polly, Transcribe, Translate, QuickSight, and any other service that has no provisionable resource |
+
+From the deployable set, keep only the **3 to 5 services** most central to the data flow. Drop supporting services (CloudWatch, VPC, Secrets Manager, IAM) unless they are core to the architecture — CloudWatch alarms may be included as they are lightweight and free.
+
+#### 8B — Derive the stack name and region
+
+- **Stack name**: `demo-{service1}-{service2}-{service3}-{YYYYMMDD}` — lowercase, hyphens, max 4 services in the name
+- **Region code**: the AWS region code from `sandbox.business.region` (e.g. `ap-southeast-1` for Singapore, `ap-south-1` for Mumbai)
+- **Template file**: `output/{ProjectName}/demo-stack.yaml`
+
+#### 8C — Read the aws-cdk-development skill and deploy
+
+Read `.github/skills/aws-cdk-development/SKILL.md` fully before writing anything.
+
+Then follow this exact sequence:
+
+**8C-1: Verify AWS credentials (single command):**
+
+```bash
+aws sts get-caller-identity --output json
+```
+
+If it fails, stop and tell the user their credentials are not reachable. Do not continue.
+
+**8C-2: Write the CloudFormation template.**
+
+Write `output/{ProjectName}/demo-stack.yaml` — a minimal CloudFormation YAML that provisions only the services from 8A and wires them together. Use these demo configurations:
+
+| Service | CloudFormation resource | Demo config |
+|---|---|---|
+| AWS Lambda | `AWS::Lambda::Function` | Runtime: python3.12, memory 128 MB, timeout 30s, inline ZipFile handler that logs the event and returns 200 |
+| Amazon SQS | `AWS::SQS::Queue` + `AWS::Lambda::EventSourceMapping` | VisibilityTimeout 30s; EventSourceMapping BatchSize 10 pointing at the Lambda |
+| Amazon SNS | `AWS::SNS::Topic` + `AWS::SNS::Subscription` | Protocol: sqs, Endpoint: queue ARN |
+| Amazon DynamoDB | `AWS::DynamoDB::Table` | BillingMode: PAY_PER_REQUEST, one attribute `pk` (String) as KeySchema HASH |
+| Amazon S3 | `AWS::S3::Bucket` | No versioning, no public access |
+| Amazon API Gateway (HTTP) | `AWS::ApiGatewayV2::Api` + Integration + Route | HTTP_PROXY integration to Lambda |
+| Amazon Kinesis | `AWS::Kinesis::Stream` | ShardCount: 1 |
+| Amazon EventBridge | `AWS::Events::Rule` | ScheduleExpression: rate(5 minutes), targets Lambda |
+| Amazon CloudWatch Alarm | `AWS::CloudWatch::Alarm` | MetricName: Errors, Namespace: AWS/Lambda, threshold 1 |
+| Amazon Cognito | `AWS::Cognito::UserPool` | Minimal, email auto-verify |
+| AWS Step Functions | `AWS::StepFunctions::StateMachine` | Single Pass state definition |
+| Amazon RDS | `AWS::RDS::DBInstance` | DBInstanceClass: db.t3.micro, Engine: mysql, AllocatedStorage: 20 — requires VPC |
+| Amazon VPC (auto-add) | `AWS::EC2::VPC` + subnets | Required whenever RDS, ElastiCache, EKS, or Fargate are in the stack |
+
+Rules for the template:
+- Add an IAM Role for Lambda with `AWSLambdaBasicExecutionRole` and inline policies only for the services it interacts with (SQS, DynamoDB, S3, Kinesis, SNS — only those present in 8A)
+- Add `DeletionPolicy: Delete` on all resources so teardown is clean
+- Add `Outputs:` for every meaningful ARN, URL, or name the user might want
+- Inline the Lambda handler as a `ZipFile` — do not reference an S3 bucket for code
+- Do not add encryption, multi-AZ, or any production safety feature — this is a fluff stack
+
+**8C-3: Validate the template:**
+
+```bash
+aws cloudformation validate-template \
+  --template-body file://output/{ProjectName}/demo-stack.yaml \
+  --region {region-code}
+```
+
+If validation fails, read the error, fix `demo-stack.yaml`, and retry until it exits 0.
+
+**8C-4: Deploy:**
+
+```bash
+aws cloudformation deploy \
+  --template-file output/{ProjectName}/demo-stack.yaml \
+  --stack-name {stack-name} \
+  --capabilities CAPABILITY_IAM \
+  --region {region-code} \
+  --no-cli-pager
+```
+
+Wait for the command to exit naturally. Do not interrupt it. Do not run it a second time while it is running.
+
+If deploy exits non-zero, check the CloudFormation events:
+
+```bash
+aws cloudformation describe-stack-events \
+  --stack-name {stack-name} \
+  --region {region-code} \
+  --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].{Resource:LogicalResourceId,Reason:ResourceStatusReason}" \
+  --output table --no-cli-pager
+```
+
+Read the failure reason, fix `demo-stack.yaml`, then re-run validation and deploy.
+
+**8C-5: Confirm CREATE_COMPLETE and collect outputs:**
+
+```bash
+aws cloudformation describe-stacks \
+  --stack-name {stack-name} \
+  --region {region-code} \
+  --query "Stacks[0].{Status:StackStatus,Outputs:Outputs}" \
+  --output json --no-cli-pager
+```
+
+`StackStatus` must be `CREATE_COMPLETE`. Collect all `Outputs` values for 8D.
+
+**8C-6: Quick smoke test (pick whichever fits the deployed services):**
+
+- **If SNS is deployed:** publish a test message and confirm the Lambda ran via CloudWatch Logs
+  ```bash
+  aws sns publish --topic-arn {TopicArn} --message "demo-test" --region {region-code} --no-cli-pager
+  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
+  ```
+- **If SQS only:** send a message directly to the queue
+  ```bash
+  aws sqs send-message --queue-url {QueueUrl} --message-body "demo-test" --region {region-code} --no-cli-pager
+  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
+  ```
+- **If API Gateway is deployed:** curl the endpoint
+  ```bash
+  curl -s {ApiEndpoint}
+  ```
+
+A REPORT line in the Lambda logs confirms the function was invoked successfully.
+
+#### 8D — Print confirmation
+
+Once `CREATE_COMPLETE` is confirmed, print:
+
+```
+Demo deployed — {stack-name} ({region-code})
+
+  Services   : {comma-separated list from 8A}
+  Data flow  : {one-line summary from architecture.description}
+  Stack      : https://console.aws.amazon.com/cloudformation/home?region={region-code}#/stacks
+  Template   : output/{ProjectName}/demo-stack.yaml
+
+  Outputs:
+  {each key: value from CloudFormation Outputs}
+
+  To tear down:
+  aws cloudformation delete-stack --stack-name {stack-name} --region {region-code}
+
+This is a minimal demo stack. Production sizing and cost estimate are in the proposal.
+```
+
+---
+
 ## Updating an Existing Proposal
 
 1. Load the saved context JSON
@@ -845,6 +1213,14 @@ Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
 15. **Copying or reusing context.json from an existing similar output folder** — this silently carries over stale service sets, wrong calculator links, and wrong timestamps; always start from scratch
 16. **Saying "if the calculator can't be completed I'll report the blocker"** — there is no acceptable partial-completion exit; retry the browser automation until it succeeds
 17. **Not writing `expected_services.json` at Step 2B** — without this file, Step 4/5/6 gates cannot detect service list tampering
+18. **Stopping after Step 7 without running Step 8** — the demo deploy is mandatory; the run is not complete until the CloudFormation stack is CREATE_COMPLETE in AWS
+19. **Passing production calculator numbers to Step 8** — the demo uses the minimal sizing table in Step 8C, never the proposal's calculator values
+20. **Including API-only services in the Step 8 deploy list** — Bedrock, SageMaker, and other API-only services have no CloudFormation resource; filter them out in 8A
+21. **Deploying all proposal services instead of the core 3–5** — the demo exists to prove the data flow, not replicate production; keep it minimal and cost-safe
+22. **Running Step 8 deploy a second time while the first is still running** — check CloudFormation stack status first; if CREATE_IN_PROGRESS, wait for natural exit
+22. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
+23. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
+24. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
 
 ## Output Completeness Check
 

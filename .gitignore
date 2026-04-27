@@ -3,3 +3,7 @@ node_modules
 .vscode
 .claude
 output
+venv/
+*.py
+*.txt
+service_spec/
