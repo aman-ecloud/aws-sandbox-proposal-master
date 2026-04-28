@@ -1,0 +1,1 @@
+python -m venv .venv && source .venv/Scripts/activate && python -m pip install -r .github/skills/aws-sandbox-proposal-master/scripts/requirements.txt

@@ -24,7 +24,7 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 >
 > The only pre-execution reads required are:
 > 1. This file (`SKILL.md`) — read once, fully
-> 2. `references/AWS_CALCULATOR_GUIDE.md` — read once before Step 3B
+> 2. `references/AWS_CALCULATOR_GUIDE.md` and `references/SCRIPT_GENERATION_GUIDE.md` — read once before Step 3B
 >
 > Do NOT run regex searches across skill files to "locate" commands or "confirm" schema fields before starting. Do NOT search `generate_proposal.py`, `verify_proposal.py`, `CONTEXT_SCHEMA.md`, `DIAGRAM_GUIDE.md`, or any other reference file before executing. All commands are in this file and in `AWS_CALCULATOR_GUIDE.md`. Searching them via `Searched for regex` before acting is pre-flight probing and wastes 3–5 minutes on a standard run.
 >
@@ -42,7 +42,7 @@ Run every step in order. Do not stop in the middle to ask what to do next. Do no
 - **Do not say the calculator link is "pending" or "coming next".** Get it now, in this run.
 - **Do not read `scripts/chrome_browser.py`.** It is not used. Use the VS Code browser tools instead.
 
-When this run ends, the output folder must have: `context.json`, `architecture.png`, and `Proposal.docx`.
+When this run ends, the output folder must have: `*context*.json`, `*architecture*.png`, and `*Proposal*.docx`.
 
 ## Execution Model (Copilot SKILL)
 
@@ -68,7 +68,7 @@ Amazon EC2, Amazon EKS, Amazon EFS, Amazon EBS, Amazon S3, Amazon RDS for MySQL,
 For each service in `service_list`, check whether a pre-built script exists:
 
 - **Script exists** at `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ServiceName}.js` → **GROUP A** — use script injection (described below).
-- **No script** → **GROUP B** — use manual Playwright form fill (`references/AWS_CALCULATOR_GUIDE.md`), then **immediately write a new `.js` script** for that service so future runs can use GROUP A injection (see "After GROUP B: Write the script" below).
+- **No script** → **GROUP B** — use manual Playwright form fill (`references/AWS_CALCULATOR_GUIDE.md`), then **immediately write a new `.js` script** for that service so future runs can use GROUP A injection.
 
 ### GROUP A — script injection (the only correct approach for these services)
 
@@ -113,211 +113,6 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
 - Any code that replicates what the pre-built script already does internally
 
 **Do NOT use** `discover_and_generate.js`, `validate_scripts.js`, or `validate_console_runs.js` — those are tooling scripts, not calculator automation scripts.
-
-### After GROUP B: Write the script for next time
-
-**Every time you successfully add a GROUP B service via manual Playwright, you must immediately write a new `.js` file for it** at:
-
-```
-.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ExactServiceName}.js
-```
-
-Where `{ExactServiceName}` is the exact name from `assets/aws_services.json` (the same name used to search in the calculator), with spaces replaced by underscores — e.g. `Amazon_Kinesis_Data_Streams.js`.
-
-#### What the script must do
-
-The script must replicate — using React synthetic events — exactly the same steps you just performed manually with Playwright. It must:
-
-1. Search for the service by name
-2. Click Configure
-3. Set the region
-4. Fill every numeric or dropdown field you touched
-5. Click "Save and add service"
-6. Print `[ServiceName] Saved successfully!` on success
-
-#### Script template — use this structure exactly
-
-The structure must match the existing scripts precisely. Read `scripts/calculator/AWS Lambda.js` as the reference — every generated script follows the same 4-phase pattern with the same helper set.
-
-```javascript
-/**
- * {Exact Service Name} - AWS Pricing Calculator Script
- *
- * Service name  : {Exact Service Name}
- * Configure URL : https://calculator.aws/#/createCalculator/{ServiceSlug}
- *
- * Auto-generated after GROUP B manual fill on {date}.
- * Inject via page.evaluate() — do NOT use require/fs.
- */
-
-(async function configure{ShortName}(params) {
-
-  // -- DEFAULT CONFIGURATION -------------------------------------------------
-  // Every field touched during the manual GROUP B fill appears here.
-  // Defaults are realistic mid-range values for a medium-scale workload.
-  // PRICING IMPACT: true = changing this value changes the monthly estimate.
-  const config = {
-    // Region | PRICING IMPACT: true
-    region: params?.region ?? 'Asia Pacific (Mumbai)',
-
-    // {Field description} | PRICING IMPACT: {true/false}
-    {paramName}: params?.{paramName} ?? {sensibleDefault},
-
-    // Add one entry per field you filled during the manual run.
-    // Use the same naming convention as AWS Lambda.js:
-    //   numberOfX, durationMs, storageGb, requestsPerMonth, retentionHours, etc.
-    // Choose defaults that represent a realistic SMB/mid-scale workload —
-    // not minimal (1 request/month) and not production-max.
-    // Examples by field type:
-    //   request counts  → 1_000_000 to 10_000_000 per month
-    //   data sizes      → 100 GB
-    //   durations       → realistic for the service (e.g. 200ms for Lambda, 24h for Kinesis retention)
-    //   instance counts → 1 or 2 nodes
-    //   storage         → 100–500 GB
-  };
-
-  console.log('[{ShortName}] Starting with config:', config);
-
-  // -- HELPERS ---------------------------------------------------------------
-
-  function jitter(min = 80, max = 350) {
-    return new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min + 1)) + min));
-  }
-  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-  function scrollTo(el) { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-
-  function setInputValue(el, value) {
-    if (!el) return;
-    scrollTo(el);
-    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
-    setter.call(el, String(value));
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  async function waitForElement(selector, timeout = 12000) {
-    const deadline = Date.now() + timeout;
-    while (Date.now() < deadline) {
-      const el = document.querySelector(selector);
-      if (el) return el;
-      await wait(300);
-    }
-    console.warn('[{ShortName}] waitForElement timed out:', selector);
-    return null;
-  }
-
-  function findInputsByAriaContains(text) {
-    return [...document.querySelectorAll('input, textarea')]
-      .filter(el => (el.getAttribute('aria-label') || '').includes(text));
-  }
-
-  async function setFieldByAria(text, value, index = 0) {
-    const all = findInputsByAriaContains(text);
-    const el = all[index] || null;
-    if (!el) { console.warn('[{ShortName}] Field not found:', text, 'index', index); return; }
-    await jitter();
-    setInputValue(el, value);
-    await jitter(100, 300);
-  }
-
-  async function clickRadioByExactAria(text) {
-    const radio = [...document.querySelectorAll('input[type="radio"]')]
-      .find(r => (r.getAttribute('aria-label') || '') === text);
-    if (!radio) { console.warn('[{ShortName}] Radio not found:', text); return; }
-    if (!radio.checked) { scrollTo(radio); await jitter(); radio.click(); await jitter(100, 300); }
-  }
-
-  // -- PHASE 1 : NAVIGATE ----------------------------------------------------
-
-  if (!window.location.hash.includes('/addService') &&
-      !window.location.hash.includes('/createCalculator/{ServiceSlug}')) {
-    window.location.hash = '#/addService';
-    await wait(2500);
-  }
-
-  // -- PHASE 2 : SEARCH AND CONFIGURE ----------------------------------------
-
-  if (window.location.hash.includes('/addService')) {
-    const searchAllRadio = [...document.querySelectorAll('input[type="radio"]')]
-      .find(r => (r.closest('label, div')?.textContent || '').includes('Search all services'));
-    if (searchAllRadio && !searchAllRadio.checked) {
-      scrollTo(searchAllRadio); await jitter(200, 400); searchAllRadio.click(); await wait(800);
-    }
-
-    const searchBox = await waitForElement(
-      'input[placeholder="Search for a service"], input[aria-label="Find Service"], input[role="searchbox"]'
-    );
-    if (searchBox) {
-      scrollTo(searchBox); await jitter(200, 500);
-      setInputValue(searchBox, '{Exact Service Name}');
-      await wait(1800);
-    }
-
-    const configBtn = [...document.querySelectorAll('button')]
-      .find(b => b.textContent.trim() === 'Configure' &&
-                 b.closest('li, article')?.textContent?.includes('{Exact Service Name}'));
-    if (configBtn) {
-      scrollTo(configBtn); await jitter(250, 600); configBtn.click(); await wait(5000);
-    } else {
-      console.warn('[{ShortName}] Configure button not found'); return;
-    }
-  }
-
-  // -- PHASE 3 : FILL FORM ---------------------------------------------------
-  // Use the exact aria-label strings observed during the manual GROUP B fill.
-  // Use setFieldByAria() for numeric inputs, clickRadioByExactAria() for radio buttons.
-  // If a field has multiple inputs with the same aria-label, use the index param.
-
-  await waitForElement('h1, input[aria-label*="Region"]', 15000);
-
-  // Region dropdown — copy the pattern from Amazon DynamoDB.js or Amazon SQS.js
-  // (find the region button, click it, find the option, click it)
-
-  // {Fill each field here, one call per field}
-  await setFieldByAria('{exact aria-label of field 1}', config.{paramName1});
-  await setFieldByAria('{exact aria-label of field 2}', config.{paramName2});
-  // ...
-
-  // -- PHASE 4 : SAVE --------------------------------------------------------
-
-  await jitter(400, 800);
-  const saveBtn = [...document.querySelectorAll('button')]
-    .find(b => b.textContent.trim() === 'Save and add service');
-  if (saveBtn) {
-    scrollTo(saveBtn); await jitter(300, 600);
-    saveBtn.click();
-    console.log('[{ShortName}] Saved successfully!');
-  } else {
-    console.warn('[{ShortName}] Save and add service button not found');
-  }
-
-})({
-  // Override defaults for this specific proposal run.
-  // Only list the params that differ from the defaults above.
-  // Example:
-  //   region: 'US East (N. Virginia)',
-  //   numberOfShards: 5,
-  //   retentionHours: 168,
-});
-```
-
-#### Rules for the generated script
-
-- **Use `params?.field ?? defaultValue`** for every config entry — never `params.field` (crashes if params is undefined) and never a bare literal (makes the value non-overridable)
-- **Defaults must be realistic mid-range values** — not 1 (too minimal to be useful) and not the proposal's production numbers (those belong in the `})({...})` override block at call time). Think: what would a typical SMB workload look like?
-  - Request counts: 1 000 000–10 000 000 per month
-  - Data/storage: 100–500 GB
-  - Durations: realistic for the service (e.g. 200 ms for a Lambda, 24 h for a Kinesis stream retention)
-  - Node/instance counts: 1–2
-- **Use the same helper set** (jitter, wait, scrollTo, setInputValue, waitForElement, findInputsByAriaContains, setFieldByAria, clickRadioByExactAria) — do not invent new helpers; the existing ones cover every case
-- **Use exact aria-label strings** from the live DOM — copy them character-for-character from what you observed during the manual fill; do not paraphrase
-- **The `})({...})` override block at the bottom** is where the proposal's actual values go when the script is injected during a run — leave it with only comments in the generated file; the agent fills it at inject time
-- **Test mentally:** re-read the script after writing and confirm every field touched during the manual fill has a corresponding `setFieldByAria` or `clickRadioByExactAria` call
-
-#### After writing the script
-
-Update the "Available scripts" count/list in this SKILL.md header to include the newly created service, so future runs know it is now GROUP A.
 
 ## When to Use This Skill
 
@@ -431,14 +226,19 @@ Hard dependency rule:
 
 ### Step 0 — Environment Check (MANDATORY)
 
-**Run this before anything else.** The bundled `scripts/diagrams_resolver.py` checks all required dependencies and guides installation of anything missing.
+**Notice:** Do not ask user to configure the interpreter environment. Run the following bash script to set up the environment automatically.
+**Run this immediately to setting up the interpreter environment:** `bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh`
 
+> **Note for the above step:** Do not change directory, the script will create a `.venv` in the current working directory and install dependencies there. If you change directory, the agent may not find the virtual environment and fail to run the Python scripts.
+
+**Run this right after setting up the environment before anything else.** The bundled `scripts/diagrams_resolver.py` checks all required dependencies and guides installation of anything missing.
 
 ```bash
 python <skill_dir>/scripts/diagrams_resolver.py check
 ```
 
 Expected output:
+
 ```
 ✅ Python 3.10+
 ✅ diagrams <version>
@@ -451,12 +251,13 @@ Expected output:
 
 **If any check fails, resolve it before continuing:**
 
-| Failure | Fix |
-|---------|-----|
-| `diagrams not installed` | `pip install diagrams` |
-| `docxtpl not installed` | `pip install docxtpl python-docx` |
-| `Graphviz 'dot' not found` | Windows: `winget install graphviz` · macOS: `brew install graphviz` · Ubuntu: `sudo apt install graphviz` |
-| `Python < 3.10` | Use `python3` / `py -3.12` · or specify full path to a Python ≥ 3.10 interpreter |
+| Failure                                                                                                                                                                                   | Fix                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `Error: Failed to run uv pip install --python` or `No module named pip` or `cannot access '.venv/Scripts/python.exe': No such file or directory` or `bash: py: command not found` | `init_py_venv.sh`                                                                                              |
+| `diagrams not installed`                                                                                                                                                                | `pip install diagrams`                                                                                         |
+| `docxtpl not installed`                                                                                                                                                                 | `pip install docxtpl python-docx`                                                                              |
+| `Graphviz 'dot' not found`                                                                                                                                                              | Windows:`winget install graphviz` · macOS: `brew install graphviz` · Ubuntu: `sudo apt install graphviz` |
+| `Python < 3.10`                                                                                                                                                                         | Use `python3` / `py -3.12` · or specify full path to a Python ≥ 3.10 interpreter                           |
 
 > **Agent tip:** If pip installs fail or packages are installed but still not importable (common with multiple Python versions), find the correct interpreter path: `where python` / `which python`. Use the interpreter that pip installed to. Use `python <path>/diagrams_resolver.py check --auto-install` to let the script handle pip automatically.
 
@@ -480,127 +281,6 @@ Expected output:
 | **Structured** | User provides labelled fields | Fill any gaps with defaults / `<TODO>`, then proceed immediately to Step 2 |
 
 In both modes: **proceed without asking**. The DOCX will contain `<TODO>` markers wherever human input is still needed — the user can fill those in after reviewing the document.
-
----
-
-#### Intelligent Prompt Parser (Raw Prompt Mode)
-
-**Step 1-P1: Extract the Solution Domain**
-
-Read the description and identify:
-- What problem is being solved
-- Who the target users are
-- What outputs the system produces
-
-See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full domain classification table and worked example.
-
-**Step 1-P2: Map Capabilities to AWS Services**
-
-Read `assets/aws_services.json`. For each capability in the description, pick the best-fit AWS service. Verify every selected name exists in `assets/aws_services.json` before adding it to `service_list`. Typical proposals have 8–15 services.
-
-| Described capability | AWS service (exact name) |
-|----------------------|--------------------------|
-| IoT sensors / device telemetry | `AWS IoT Core` |
-| Real-time streaming ingest | `Amazon Kinesis Data Streams` |
-| Stream delivery to storage | `Amazon Data firehose` |
-| Data lake / object storage | `Amazon Simple Storage Service (S3)` |
-| ETL / data catalogue | `AWS Glue` |
-| Time-series metrics | `Amazon Timestream` |
-| Stream processing / Flink | `Amazon Managed Service for Apache Flink` |
-| Data warehouse | `Amazon Redshift` |
-| Serverless SQL on S3 | `Amazon Athena` |
-| ML training and inference | `Amazon SageMaker` |
-| Generative AI / LLMs | `Amazon Bedrock` |
-| Demand forecasting | `Amazon Forecast` |
-| Serverless compute | `AWS Lambda` |
-| Workflow orchestration | `AWS Step Functions` |
-| REST API layer | `Amazon API Gateway` |
-| Event bus / decoupling | `Amazon EventBridge` |
-| Notifications | `Amazon Simple Notification Service (SNS)` |
-| Async queuing | `Amazon Simple Queue Service (SQS)` |
-| Relational (MySQL) | `Amazon Aurora MySQL-Compatible` |
-| Relational (PostgreSQL) | `Amazon Aurora PostgreSQL-Compatible DB` |
-| NoSQL / key-value | `Amazon DynamoDB` |
-| Caching | `Amazon ElastiCache` |
-| Search | `Amazon OpenSearch Service` |
-| Containers (serverless) | `AWS Fargate` |
-| Containers (Kubernetes) | `Amazon EKS` |
-| BI dashboards | `Amazon QuickSight` |
-| Monitoring / alarms | `Amazon CloudWatch` |
-| Identity / access control | `AWS IAM Access Analyzer` |
-| Encryption keys | `AWS Key Management Service` |
-| Secrets | `AWS Secrets Manager` |
-| Audit trail | `AWS CloudTrail` |
-| CDN | `Amazon CloudFront` |
-| DNS | `Amazon Route 53` |
-| VPC / networking | `Amazon Virtual Private Cloud (VPC)` |
-
-**Step 1-P3: Detect Region**
-
-Scan **both the user's prompt AND any surrounding conversation** for geographic signals and map to the closest AWS region:
-
-| Signal (city / country / keyword) | AWS Region |
-|-----------------------------------|------------|
-| Taiwan, Taipei | `Asia Pacific (Taipei)` |
-| Singapore | `Asia Pacific (Singapore)` |
-| Japan, Tokyo | `Asia Pacific (Tokyo)` |
-| Korea, Seoul | `Asia Pacific (Seoul)` |
-| Australia, Sydney | `Asia Pacific (Sydney)` |
-| India, Mumbai | `Asia Pacific (Mumbai)` |
-| Hong Kong | `Asia Pacific (Hong Kong)` |
-| Jakarta, Indonesia | `Asia Pacific (Jakarta)` |
-| Germany, Frankfurt | `Europe (Frankfurt)` |
-| Ireland, Dublin | `Europe (Ireland)` |
-| UK, London | `Europe (London)` |
-| Paris, France | `Europe (Paris)` |
-| Stockholm, Sweden | `Europe (Stockholm)` |
-| US East, Virginia, New York | `US East (N. Virginia)` |
-| US West, Oregon, California | `US West (Oregon)` |
-| Canada, Toronto | `Canada (Central)` |
-| Brazil, São Paulo | `South America (São Paulo)` |
-| Middle East, UAE, Dubai | `Middle East (UAE)` |
-| No geographic signal | `US East (N. Virginia)` |
-
-**Step 1-P4: Populate All Fields — Use `<TODO>` for Unknown Human Fields**
-
-Derive every proposal field. For fields that require real human input and cannot be inferred, write the literal string `<TODO>` as the value — these will appear as visible placeholders in the final DOCX so the user knows exactly what to fill in.
-
-| Field | Rule |
-|-------|------|
-| `title` | Derive from domain (e.g. "AI-Powered Smart Healthcare Monitoring & Early Warning System") |
-| `partner` | `<TODO>` |
-| `contact.name` | `<TODO>` |
-| `contact.title` | `<TODO>` |
-| `contact.email` | `<TODO>` |
-| `pdm` | `<TODO>` |
-| `sa` | `<TODO>` |
-| `solution_type` | Infer from domain |
-| `customer_type` | Infer from described users |
-| `pain_point` | Summarise the problem (1–2 sentences) |
-| `summary` | Write a 3–5 sentence executive summary |
-| `features` | List 5–8 bullet points from capabilities mentioned |
-| `justification` | Write 2–3 sentences on business value |
-| `region` | Detect from Step 1-P3 |
-| `aws_funding` | `"USD 80,000"` |
-| `labor_cost` | `"USD 60,000"` |
-| `total_cost` | `"USD 140,000"` |
-| `start_date` | First day of month 3 months from today |
-| `end_date` | 6 months after start |
-| `release_date` | 1 month after end |
-| `total_mandays` | ≤8 services → 60, 9–12 → 90, ≥13 → 120 |
-| `phases` | 4 phases: Discovery → Foundation → Core Build → Delivery |
-| `calculator_link` | `""` (empty; filled by Step 3B) |
-| `applied_services` | `[]` (empty; filled by Step 3B) |
-| `public_or_not` | `"No"` |
-| `case_study` | `"Yes"` |
-| `details.update.customer` | `"N/A"` (revision history field — blank for new proposals) |
-| `details.update.feature` | `"N/A"` |
-| `details.update.opportunity` | `"N/A"` |
-| `details.update.pain_point` | `"N/A"` |
-| `details.update.publish_date` | `"N/A"` |
-| `business.additional_info` | `"N/A"` |
-
-**Proceed immediately to Step 2** — do not wait for user confirmation.
 
 ---
 
@@ -673,27 +353,42 @@ Steps 3A, 3B, and 3C must fail-fast if either field is missing.
 
 **Verification:** JSON exists, parses, and includes `sandbox.business.region` and non-empty `sandbox.business.service_list`.
 
-#### Step 2B — Write Immutable Service Reference (MANDATORY)
+#### Step 2A Output Contract (MANDATORY)
 
-Immediately after saving `context.json`, snapshot the planned service names into a separate file. This file is the tamper-evident ground truth used by Steps 4, 5, and 6 to verify the calculator was completed for the full original set — not a reduced subset.
+Persist the plan to a single file before starting Step 3A/3B:
 
-```bash
-# Replace {ProjectName} with the actual computed project folder name before running.
-# Example: proj="output/Serverless_Fraud_Detection_20260401_1705"
-proj="output/{ProjectName}"
-python -c "
-import json, sys
-from pathlib import Path
-proj = '$proj'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-names = [s['service_name'] for s in ctx['sandbox']['business']['service_list']]
-assert len(names) >= 3, f'Too few services ({len(names)}): a valid proposal needs at least 3'
-Path(proj + '/expected_services.json').write_text(json.dumps(names, indent=2), encoding='utf-8')
-print('Locked', len(names), 'expected services:', names)
-"
+```text
+output/{ProjectName}_context.json
 ```
 
-> **Do NOT modify `expected_services.json` after this point.** It is written once here and read-only from this point forward. Steps 4, 5, and 6 all compare against this file — not against `service_list` in context.json, which can be overwritten. If you are tempted to modify it: do not. Fix the calculator estimate instead.
+The file is the only accepted source for Step 3A and Step 3B. Add these fields:
+
+- `sandbox.business.region` (required)
+- `sandbox.business.service_list` (required)
+
+`service_list` item format:
+
+```json
+{
+  "service_name": "Amazon S3",
+  "calculator_config": {
+    "storage_gb": 10,
+    "put_requests": 400,
+    "get_requests": 400
+  },
+  "diagram_tags": ["storage", "edge"]
+}
+```
+
+Step 3A and 3B must fail-fast if either field is missing.
+
+**Input:** Structured data from Step 1.
+
+**Output:** `output/{ProjectName}_context.json`.
+
+**Save rule:** Required.
+
+**Verification:** JSON exists, parses, and includes `sandbox.business.region` and non-empty `sandbox.business.service_list`.
 
 ### Step 3A — Generate Architecture Diagram (parallel-eligible with Step 3B)
 
@@ -741,7 +436,15 @@ Open the browser, add every service from `service_list` to the AWS Pricing Calcu
 
 Read these two files before opening the browser:
 - **`references/AWS_CALCULATOR_GUIDE.md`** — exact steps and code patterns for adding services (GROUP A script injection and GROUP B manual form fill)
+- **`references/SCRIPT_GENERATION_GUIDE.md`** —Generate JavaScript automation scripts to browse the `https://calculator.aws/#/addService` website for configuring AWS services. These scripts can be executed by AI agents or directly in browser consoles.
 - **`references/CALCULATOR_SIZING.md`** — how to size each service, which unit each field expects, and the cost sanity check to run before clicking Share
+
+**Using Modular Service Scripts:**
+
+Each AWS service has its own automation module under `scripts/{service}/{service}.js`.
+
+**Scope:** Run scripts in `scripts/` to get the AWS services pricing
+Note: when scripts are used by AI Agent, since the `require` function is not available in the browser context, so MUST NOT use the `require` function, you must use the `read_file` tool to pull in the script content, then embed it directly into the Playwright API: `page.evaluate()` function.
 
 Do not improvise a different approach. The key rules are:
 - Services that have a `.js` file in `scripts/calculator/` must use that script (read it with the Read tool, paste it into `page.evaluate()`)
@@ -760,61 +463,22 @@ Do not improvise a different approach. The key rules are:
 ### Step 4 — Assemble Context JSON
 
 Merge all collected data into a single JSON file:
+
 - All business context from Steps 1-2
 - `sandbox.architecture.diagram` = PNG path from Step 3A
 - `sandbox.business.calculator_link` = share URL from Step 3B
 - `sandbox.architecture.applied_services` = service names used by Step 3A
 - `sandbox.business.applied_services` = service names used by Step 3B
 
-**Hard gate — run this verification before proceeding to Step 5:**
+Guardrail:
 
-```bash
-python -c "
-import json, sys
-from pathlib import Path
-proj = 'output/{ProjectName}'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-biz = ctx['sandbox']['business']
-link = biz.get('calculator_link', '')
-applied = biz.get('applied_services', [])
-errors = []
-# 1. Calculator link must be real
-if not (link and 'calculator.aws' in link and 'estimate?id=' in link):
-    errors.append('calculator_link missing or invalid: ' + repr(link))
-# 2. Compare against EXPECTED (locked at Step 2) — not against service_list (which may have been tampered)
-exp_path = Path(proj + '/expected_services.json')
-if not exp_path.exists():
-    errors.append('expected_services.json not found — was Step 2B completed?')
-else:
-    expected = json.loads(exp_path.read_text(encoding='utf-8'))
-    if len(expected) < 3:
-        errors.append(f'Only {len(expected)} service(s) planned — minimum 3 required for a valid proposal')
-    if sorted(applied) != sorted(expected):
-        errors.append(f'applied_services does not match expected:\\n  applied:  {sorted(applied)}\\n  expected: {sorted(expected)}')
-# 3. Architecture PNG must exist
-if not Path(proj + '/architecture.png').exists():
-    errors.append('architecture.png not found')
-if errors:
-    print('STEP 4 BLOCKED:')
-    for e in errors: print(' -', e)
-    sys.exit(1)
-print('Step 4 OK — all', len(applied), 'services verified, calculator link present')
-"
-```
+- The expected service set (`sandbox.business.service_list`) must match both applied sets. If mismatch exists, stop before Step 5.
 
-If this script exits with code 1: **stop here**. The most common cause is `applied_services` not matching `expected_services.json` — meaning the calculator estimate has fewer services than Step 2 planned. Fix the estimate (add missing services), re-run Step 3B round-trip verification, and re-run this gate.
-
-Do NOT proceed if:
-- `sandbox.business.calculator_link` is empty, `""`, or a placeholder — complete Step 3B
-- `sandbox.business.applied_services` is empty or does not match `service_list`
-- `sandbox.architecture.applied_services` does not match `service_list`
-- `architecture.png` does not exist on disk
-
-Save the JSON to `output/{ProjectName}/context.json` for reproducibility and future updates.
+Save the JSON to `output/{ProjectName}_context.json` for reproducibility and future updates.
 
 **Input:** Step 2 context data + Step 3A/3B outputs.
 
-**Output:** Finalized `output/{ProjectName}/context.json`.
+**Output:** Finalized `output/{ProjectName}_context.json`.
 
 **Save rule:** Required.
 
@@ -822,360 +486,67 @@ Save the JSON to `output/{ProjectName}/context.json` for reproducibility and fut
 
 ### Step 5 — Generate the DOCX
 
-> **HARD GATE — run this check FIRST. If it fails, go back to Step 3B before touching generate_proposal.py.**
-
-```bash
-python -c "
-import json, sys
-from pathlib import Path
-proj = 'output/{ProjectName}'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-biz = ctx['sandbox']['business']
-link = biz.get('calculator_link', '')
-applied = biz.get('applied_services', [])
-errors = []
-if not (link and 'calculator.aws' in link and 'estimate?id=' in link):
-    errors.append('calculator_link invalid: ' + repr(link))
-exp_path = Path(proj + '/expected_services.json')
-if exp_path.exists():
-    expected = json.loads(exp_path.read_text(encoding='utf-8'))
-    if sorted(applied) != sorted(expected):
-        errors.append(f'applied_services {sorted(applied)} != expected {sorted(expected)}')
-    if len(applied) < 3:
-        errors.append(f'Only {len(applied)} service(s) — minimum 3 required')
-if errors:
-    print('STEP 5 BLOCKED — complete Step 3B for ALL services before generating DOCX:')
-    for e in errors: print(' -', e)
-    sys.exit(1)
-print('Step 5 OK — proceeding to generate_proposal.py with', len(applied), 'services and link:', link)
-"
-```
-
-If this script exits with code 1: **stop**. Do not run `generate_proposal.py`. Return to Step 3B, add the missing services to the calculator, re-run round-trip verification, write back `applied_services` and `calculator_link`, then re-run this gate.
-
----
-
 The script binds the context JSON onto the standard **Sandbox Innovation Plan Template** (`assets/Sandbox Innovation Plan Template_v2.docx`) using `docxtpl` (Jinja2 for Word). The template contains Jinja2 placeholders (`{{sandbox.details.summary}}`) and row loops (`{%tr for phase in sandbox.plan.total_phases%}`) that are filled automatically.
 
 1. Ensure dependencies are installed:
    ```bash
    pip install docxtpl python-docx
    ```
-
 2. Run the bundled generator script:
-   ```bash
-   python <skill_dir>/scripts/generate_proposal.py output/{ProjectName}/context.json --output output/{ProjectName}/Proposal.docx
-   ```
+	```bash
+	python <skill_dir>/scripts/generate_proposal.py output/{ProjectName}_context.json --output output/{ProjectName}_Proposal.docx
+	```
 
-   Or invoke the function directly in Python:
-   ```python
-   import json, sys
-   from pathlib import Path
-   sys.path.insert(0, str(Path('<skill_dir>/scripts')))
-   from generate_proposal import generate_proposal
+	Or invoke the function directly in Python:
+	```python
+	import json, sys
+	from pathlib import Path
+	sys.path.insert(0, str(Path('<skill_dir>/scripts')))
+	from generate_proposal import generate_proposal
 
-   context = json.loads(Path('context.json').read_text())
-   generate_proposal(context, Path('output/{ProjectName}/Proposal.docx'))
-   ```
+	context = json.loads(Path('context.json').read_text())
+	generate_proposal(context, Path('output/{ProjectName}_Proposal.docx'))
+	```
 
    To use a custom template:
-   ```bash
-   python <skill_dir>/scripts/generate_proposal.py output/{ProjectName}/context.json -o output/{ProjectName}/Proposal.docx -t /path/to/custom_template.docx
-   ```
+
+	```bash
+	python <skill_dir>/scripts/generate_proposal.py output/{ProjectName}_context.json -o output/{ProjectName}_Proposal.docx -t /path/to/custom_template.docx
+	```
 
 The script:
+
 - Validates all required fields (exits with clear error on missing data)
-- **Enforces `calculator_link` as a required non-empty field** — exits with code 1 and an explicit error message if the link is empty, missing, or does not match the `https://calculator.aws/#/estimate?id=<hash>` format. This is a hard script-level block, not a warning. There is no flag or override to bypass it.
 - Reshapes the JSON to match the template's Jinja2 placeholder structure
-- Auto-converts Markdown strings to plain text for split-run template cells; converts to `docxtpl.RichText` for other fields
-- Embeds the architecture diagram as an `InlineImage` sized to fit within page bounds (max 6" × 7")
+- Auto-converts Markdown strings to `docxtpl.RichText` (bold, italic, headers, lists, code)
+- Embeds the architecture diagram as an `InlineImage` at 6 inches width
 - Renders the template and saves the final DOCX
 
-**Input:** `output/{ProjectName}/context.json`.
+**Input:** `output/{ProjectName}_context.json`.
 
-**Output:** `output/{ProjectName}/Proposal.docx`.
+**Output:** `output/{ProjectName}_Proposal.docx`.
 
 **Save rule:** Required.
 
-**Verification:** DOCX exists and opens with all fields rendered.
+**Verification:**
 
-### Step 6 — Review (MANDATORY — runs review-skill R1→R5)
+- DOCX exists and opens with all fields rendered.
+- The architecture description must be corresponding with the diagram, and the calculator link is present in the business justification section.
 
-> **This step is not optional.** Before delivering to the user, the proposal must pass an independent consistency audit using the review-skill at `.github/skills/review-skill/SKILL.md`. Run all five review steps now as part of this pipeline.
+### Step 6 — Deliver to User
 
-Execute the full review-skill workflow on the project just generated:
+Present the generated DOCX file to the user. If the environment supports download links, provide one. Mention:
 
-**R1 — Load context:** Read `output/{ProjectName}/context.json`. Extract `service_list`, `business.applied_services`, `architecture.applied_services`, and `calculator_link`.
+- The context JSON is saved for future updates
+- The AWS Calculator share link for independent cost review
 
-**R2 — Static service set check:** Compare all three service sets against each other and against `expected_services.json`. Run this check script:
+**Input:** `output/{ProjectName}_Proposal.docx` and `output/{ProjectName}_context.json`.
 
-```bash
-python -c "
-import json, sys
-from pathlib import Path
-proj = 'output/{ProjectName}'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-biz = ctx['sandbox']['business']
-arch = ctx['sandbox']['architecture']
-planned   = set(s['service_name'].strip().lower() for s in biz.get('service_list', []))
-calc_app  = set(s.strip().lower() for s in biz.get('applied_services', []))
-diag_app  = set(s.strip().lower() for s in arch.get('applied_services', []))
-exp_path  = Path(proj + '/expected_services.json')
-expected  = set(s.strip().lower() for s in json.loads(exp_path.read_text())) if exp_path.exists() else planned
-errors = []
-if calc_app != expected:
-    errors.append('Plan vs Calculator: missing=' + str(expected - calc_app) + ' extra=' + str(calc_app - expected))
-if diag_app and diag_app != expected:
-    errors.append('Plan vs Diagram: missing=' + str(expected - diag_app) + ' extra=' + str(diag_app - expected))
-dup = [s for s in biz.get('applied_services', []) if biz.get('applied_services', []).count(s) > 1]
-if dup:
-    errors.append('Duplicates in applied_services: ' + str(list(set(dup))))
-if errors:
-    print('R2 FAIL:')
-    for e in errors: print(' -', e)
-    sys.exit(1)
-print('R2 PASS — all', len(expected), 'services consistent across plan / calculator / diagram')
-"
-```
-
-**R3 — Live calculator audit:** Navigate to `calculator_link` in the browser. Set page size to 50 rows. Read the full service table. Confirm count and names match `expected_services.json`.
-
-**R4 — DOCX content verification:** Run `verify_proposal.py` against the generated document. This checks 26 mandatory fields and renders — it is a hard gate:
-
-```bash
-python .github/skills/aws-sandbox-proposal-master/scripts/verify_proposal.py \
-    output/{ProjectName}/Proposal.docx \
-    output/{ProjectName}/context.json
-```
-
-If `verify_proposal.py` exits with code 1: **do not proceed to R5 or Step 7**. Fix the failing checks (see `review-skill/SKILL.md` Step R4 for remediation by failure type), then regenerate the DOCX and re-run R4.
-
-**R5 — Generate review report:** Print the structured report to the user (format defined in `review-skill/SKILL.md` Step R5). Include results from R2 static check, R3 live audit, and R4 DOCX verification. Save it to `output/{ProjectName}/review_report.txt`.
-
-**If any check fails:** fix the root cause first (re-run Step 3A, 3B, 4, or 5 as appropriate), then re-run Step 6 before proceeding to Step 7. Do NOT deliver a proposal that failed its own review.
-
-**Input:** `output/{ProjectName}/context.json`, `output/{ProjectName}/Proposal.docx`, `output/{ProjectName}/expected_services.json`, browser access to `calculator_link`.
-
-**Output:** `output/{ProjectName}/review_report.txt`, review result in memory.
-
-**Verification:** All R1–R5 checks pass (exit code 0 on R2 script, R4 script, live count matches, report saved).
-
----
-
-### Step 7 — Deliver to User
-
-> **FINAL DELIVERY GATE — run this check BEFORE presenting anything to the user. If it fails, the run is not complete.**
-
-```bash
-python -c "
-import json, sys
-from pathlib import Path
-proj = 'output/{ProjectName}'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-biz = ctx['sandbox']['business']
-link = biz.get('calculator_link', '')
-applied = biz.get('applied_services', [])
-errors = []
-# 1. Real calculator link
-if not (link and 'calculator.aws' in link and 'estimate?id=' in link):
-    errors.append('calculator_link invalid or missing: ' + repr(link))
-# 2. Applied services match expected (locked at Step 2)
-exp_path = Path(proj + '/expected_services.json')
-if exp_path.exists():
-    expected = json.loads(exp_path.read_text(encoding='utf-8'))
-    if sorted(applied) != sorted(expected):
-        errors.append(f'applied_services mismatch:\\n  got:      {sorted(applied)}\\n  expected: {sorted(expected)}')
-    if len(applied) < 3:
-        errors.append(f'Only {len(applied)} service(s) — minimum 3 required')
-# 3. All artifact files present
-for f in ['context.json', 'architecture.png', 'Proposal.docx']:
-    if not Path(proj + '/' + f).exists():
-        errors.append(f'{f} not found in {proj}/')
-if errors:
-    print('STEP 7 BLOCKED — fix these before continuing:')
-    for e in errors: print(' -', e)
-    sys.exit(1)
-print('Step 7 checks passed — ready to deliver.')
-print('  Calculator link:', link)
-print('  Services (' + str(len(applied)) + '):', applied)
-"
-```
-
-If this script exits with code 1: fix the failing checks, then re-run it.
-
-If it exits with code 0: present the complete delivery to the user:
-
-```
-Proposal complete — output/{ProjectName}/
-
-  context.json          — proposal data
-  architecture.png      — architecture diagram
-  Proposal.docx         — proposal document
-
-Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
-```
-
-**Input:** `output/{ProjectName}/Proposal.docx`, `output/{ProjectName}/context.json`, and `sandbox.business.calculator_link` (must be a live URL).
-
-**Output:** User delivery with file paths and calculator link.
+**Output:** User delivery confirmation.
 
 **Save rule:** No new file; reuse saved output artifacts.
 
-**Verification:** All three files exist on disk AND `calculator_link` is a valid `https://calculator.aws/#/estimate?id=<hash>` URL.
-
----
-
-### Step 8 — Deploy Minimal Demo Architecture
-
-After Step 7 passes, deploy a minimal live demo of the architecture to AWS. **This step is mandatory — do not skip it, do not ask the user if they want to deploy.**
-
-The demo is intentionally small — a fluff stack to prove the services wire together. Its purpose is proof-of-connectivity, not production scale. Use minimal configurations only. Never use proposal calculator numbers here.
-
-#### 8A — Identify the core deployable services
-
-Read `output/{ProjectName}/context.json`. From `sandbox.architecture.applied_services` (or `sandbox.business.service_list` if applied_services is absent), identify the services that form the **main data flow** described in `sandbox.architecture.description`.
-
-Filter to only services that CloudFormation can provision as real resources:
-
-| Deployable via CloudFormation | Skip — API-only, no resource to provision |
-|---|---|
-| Lambda, DynamoDB, S3, SQS, SNS, API Gateway, Kinesis, EventBridge, RDS, ElastiCache, EKS, Fargate, CloudFront, Step Functions, Cognito, OpenSearch, Secrets Manager, Redshift, VPC, CloudWatch, IoT Core, Glue, ECS, MSK | Bedrock, SageMaker, Comprehend, Rekognition, Textract, Polly, Transcribe, Translate, QuickSight, and any other service that has no provisionable resource |
-
-From the deployable set, keep only the **3 to 5 services** most central to the data flow. Drop supporting services (CloudWatch, VPC, Secrets Manager, IAM) unless they are core to the architecture — CloudWatch alarms may be included as they are lightweight and free.
-
-#### 8B — Derive the stack name and region
-
-- **Stack name**: `demo-{service1}-{service2}-{service3}-{YYYYMMDD}` — lowercase, hyphens, max 4 services in the name
-- **Region code**: the AWS region code from `sandbox.business.region` (e.g. `ap-southeast-1` for Singapore, `ap-south-1` for Mumbai)
-- **Template file**: `output/{ProjectName}/demo-stack.yaml`
-
-#### 8C — Read the aws-cdk-development skill and deploy
-
-Read `.github/skills/aws-cdk-development/SKILL.md` fully before writing anything.
-
-Then follow this exact sequence:
-
-**8C-1: Verify AWS credentials (single command):**
-
-```bash
-aws sts get-caller-identity --output json
-```
-
-If it fails, stop and tell the user their credentials are not reachable. Do not continue.
-
-**8C-2: Write the CloudFormation template.**
-
-Write `output/{ProjectName}/demo-stack.yaml` — a minimal CloudFormation YAML that provisions only the services from 8A and wires them together. Use these demo configurations:
-
-| Service | CloudFormation resource | Demo config |
-|---|---|---|
-| AWS Lambda | `AWS::Lambda::Function` | Runtime: python3.12, memory 128 MB, timeout 30s, inline ZipFile handler that logs the event and returns 200 |
-| Amazon SQS | `AWS::SQS::Queue` + `AWS::Lambda::EventSourceMapping` | VisibilityTimeout 30s; EventSourceMapping BatchSize 10 pointing at the Lambda |
-| Amazon SNS | `AWS::SNS::Topic` + `AWS::SNS::Subscription` | Protocol: sqs, Endpoint: queue ARN |
-| Amazon DynamoDB | `AWS::DynamoDB::Table` | BillingMode: PAY_PER_REQUEST, one attribute `pk` (String) as KeySchema HASH |
-| Amazon S3 | `AWS::S3::Bucket` | No versioning, no public access |
-| Amazon API Gateway (HTTP) | `AWS::ApiGatewayV2::Api` + Integration + Route | HTTP_PROXY integration to Lambda |
-| Amazon Kinesis | `AWS::Kinesis::Stream` | ShardCount: 1 |
-| Amazon EventBridge | `AWS::Events::Rule` | ScheduleExpression: rate(5 minutes), targets Lambda |
-| Amazon CloudWatch Alarm | `AWS::CloudWatch::Alarm` | MetricName: Errors, Namespace: AWS/Lambda, threshold 1 |
-| Amazon Cognito | `AWS::Cognito::UserPool` | Minimal, email auto-verify |
-| AWS Step Functions | `AWS::StepFunctions::StateMachine` | Single Pass state definition |
-| Amazon RDS | `AWS::RDS::DBInstance` | DBInstanceClass: db.t3.micro, Engine: mysql, AllocatedStorage: 20 — requires VPC |
-| Amazon VPC (auto-add) | `AWS::EC2::VPC` + subnets | Required whenever RDS, ElastiCache, EKS, or Fargate are in the stack |
-
-Rules for the template:
-- Add an IAM Role for Lambda with `AWSLambdaBasicExecutionRole` and inline policies only for the services it interacts with (SQS, DynamoDB, S3, Kinesis, SNS — only those present in 8A)
-- Add `DeletionPolicy: Delete` on all resources so teardown is clean
-- Add `Outputs:` for every meaningful ARN, URL, or name the user might want
-- Inline the Lambda handler as a `ZipFile` — do not reference an S3 bucket for code
-- Do not add encryption, multi-AZ, or any production safety feature — this is a fluff stack
-
-**8C-3: Validate the template:**
-
-```bash
-aws cloudformation validate-template \
-  --template-body file://output/{ProjectName}/demo-stack.yaml \
-  --region {region-code}
-```
-
-If validation fails, read the error, fix `demo-stack.yaml`, and retry until it exits 0.
-
-**8C-4: Deploy:**
-
-```bash
-aws cloudformation deploy \
-  --template-file output/{ProjectName}/demo-stack.yaml \
-  --stack-name {stack-name} \
-  --capabilities CAPABILITY_IAM \
-  --region {region-code} \
-  --no-cli-pager
-```
-
-Wait for the command to exit naturally. Do not interrupt it. Do not run it a second time while it is running.
-
-If deploy exits non-zero, check the CloudFormation events:
-
-```bash
-aws cloudformation describe-stack-events \
-  --stack-name {stack-name} \
-  --region {region-code} \
-  --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].{Resource:LogicalResourceId,Reason:ResourceStatusReason}" \
-  --output table --no-cli-pager
-```
-
-Read the failure reason, fix `demo-stack.yaml`, then re-run validation and deploy.
-
-**8C-5: Confirm CREATE_COMPLETE and collect outputs:**
-
-```bash
-aws cloudformation describe-stacks \
-  --stack-name {stack-name} \
-  --region {region-code} \
-  --query "Stacks[0].{Status:StackStatus,Outputs:Outputs}" \
-  --output json --no-cli-pager
-```
-
-`StackStatus` must be `CREATE_COMPLETE`. Collect all `Outputs` values for 8D.
-
-**8C-6: Quick smoke test (pick whichever fits the deployed services):**
-
-- **If SNS is deployed:** publish a test message and confirm the Lambda ran via CloudWatch Logs
-  ```bash
-  aws sns publish --topic-arn {TopicArn} --message "demo-test" --region {region-code} --no-cli-pager
-  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
-  ```
-- **If SQS only:** send a message directly to the queue
-  ```bash
-  aws sqs send-message --queue-url {QueueUrl} --message-body "demo-test" --region {region-code} --no-cli-pager
-  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
-  ```
-- **If API Gateway is deployed:** curl the endpoint
-  ```bash
-  curl -s {ApiEndpoint}
-  ```
-
-A REPORT line in the Lambda logs confirms the function was invoked successfully.
-
-#### 8D — Print confirmation
-
-Once `CREATE_COMPLETE` is confirmed, print:
-
-```
-Demo deployed — {stack-name} ({region-code})
-
-  Services   : {comma-separated list from 8A}
-  Data flow  : {one-line summary from architecture.description}
-  Stack      : https://console.aws.amazon.com/cloudformation/home?region={region-code}#/stacks
-  Template   : output/{ProjectName}/demo-stack.yaml
-
-  Outputs:
-  {each key: value from CloudFormation Outputs}
-
-  To tear down:
-  aws cloudformation delete-stack --stack-name {stack-name} --region {region-code}
-
-This is a minimal demo stack. Production sizing and cost estimate are in the proposal.
-```
+**Verification:** User receives the DOCX path and calculator link.
 
 ---
 
@@ -1213,14 +584,6 @@ This is a minimal demo stack. Production sizing and cost estimate are in the pro
 15. **Copying or reusing context.json from an existing similar output folder** — this silently carries over stale service sets, wrong calculator links, and wrong timestamps; always start from scratch
 16. **Saying "if the calculator can't be completed I'll report the blocker"** — there is no acceptable partial-completion exit; retry the browser automation until it succeeds
 17. **Not writing `expected_services.json` at Step 2B** — without this file, Step 4/5/6 gates cannot detect service list tampering
-18. **Stopping after Step 7 without running Step 8** — the demo deploy is mandatory; the run is not complete until the CloudFormation stack is CREATE_COMPLETE in AWS
-19. **Passing production calculator numbers to Step 8** — the demo uses the minimal sizing table in Step 8C, never the proposal's calculator values
-20. **Including API-only services in the Step 8 deploy list** — Bedrock, SageMaker, and other API-only services have no CloudFormation resource; filter them out in 8A
-21. **Deploying all proposal services instead of the core 3–5** — the demo exists to prove the data flow, not replicate production; keep it minimal and cost-safe
-22. **Running Step 8 deploy a second time while the first is still running** — check CloudFormation stack status first; if CREATE_IN_PROGRESS, wait for natural exit
-22. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
-23. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
-24. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
 
 ## Output Completeness Check
 
