@@ -34,7 +34,7 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 
 Run every step in order. Do not stop in the middle to ask what to do next. Do not skip steps.
 
-**Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7 → Step 8**
+**Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7**
 
 - **Step 3B (AWS Calculator):** Open the browser, add all services, get a real share link. Do not deliver without it. Do not leave `calculator_link` blank. If it is blank, `generate_proposal.py` will fail and you cannot move forward — so finish Step 3B first.
 - **Do not reuse an old `context.json`.** Every run creates a new folder with a fresh `context.json`.
@@ -398,13 +398,7 @@ Create the subfolder with `mkdir -p output/{ProjectName}` at the start of Step 2
                ▼
 ┌───────────────────────────────────┐
 │  Step 7: Deliver to User          │
-└──────────────┬────────────────────┘
-               ▼
-┌────────────────────────────────────────┐
-│  Step 8: Deploy Demo Architecture      │
-│  (aws-cdk-development → CF template    │
-│   → aws cloudformation deploy)         │
-└────────────────────────────────────────┘
+└───────────────────────────────────┘
 
 ```
 
@@ -496,109 +490,15 @@ See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full doma
 
 **Step 1-P2: Map Capabilities to AWS Services**
 
-Read `assets/aws_services.json`. For each capability in the description, pick the best-fit AWS service. Verify every selected name exists in `assets/aws_services.json` before adding it to `service_list`. Typical proposals have 8–15 services.
-
-| Described capability | AWS service (exact name) |
-|----------------------|--------------------------|
-| IoT sensors / device telemetry | `AWS IoT Core` |
-| Real-time streaming ingest | `Amazon Kinesis Data Streams` |
-| Stream delivery to storage | `Amazon Data firehose` |
-| Data lake / object storage | `Amazon Simple Storage Service (S3)` |
-| ETL / data catalogue | `AWS Glue` |
-| Time-series metrics | `Amazon Timestream` |
-| Stream processing / Flink | `Amazon Managed Service for Apache Flink` |
-| Data warehouse | `Amazon Redshift` |
-| Serverless SQL on S3 | `Amazon Athena` |
-| ML training and inference | `Amazon SageMaker` |
-| Generative AI / LLMs | `Amazon Bedrock` |
-| Demand forecasting | `Amazon Forecast` |
-| Serverless compute | `AWS Lambda` |
-| Workflow orchestration | `AWS Step Functions` |
-| REST API layer | `Amazon API Gateway` |
-| Event bus / decoupling | `Amazon EventBridge` |
-| Notifications | `Amazon Simple Notification Service (SNS)` |
-| Async queuing | `Amazon Simple Queue Service (SQS)` |
-| Relational (MySQL) | `Amazon Aurora MySQL-Compatible` |
-| Relational (PostgreSQL) | `Amazon Aurora PostgreSQL-Compatible DB` |
-| NoSQL / key-value | `Amazon DynamoDB` |
-| Caching | `Amazon ElastiCache` |
-| Search | `Amazon OpenSearch Service` |
-| Containers (serverless) | `AWS Fargate` |
-| Containers (Kubernetes) | `Amazon EKS` |
-| BI dashboards | `Amazon QuickSight` |
-| Monitoring / alarms | `Amazon CloudWatch` |
-| Identity / access control | `AWS IAM Access Analyzer` |
-| Encryption keys | `AWS Key Management Service` |
-| Secrets | `AWS Secrets Manager` |
-| Audit trail | `AWS CloudTrail` |
-| CDN | `Amazon CloudFront` |
-| DNS | `Amazon Route 53` |
-| VPC / networking | `Amazon Virtual Private Cloud (VPC)` |
+Read `assets/aws_services.json`. For each capability, pick the best-fit service and verify the name exists in `aws_services.json` before adding it to `service_list`. Typical proposals have 8–15 services. See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full capability→service mapping table.
 
 **Step 1-P3: Detect Region**
 
-Scan **both the user's prompt AND any surrounding conversation** for geographic signals and map to the closest AWS region:
-
-| Signal (city / country / keyword) | AWS Region |
-|-----------------------------------|------------|
-| Taiwan, Taipei | `Asia Pacific (Taipei)` |
-| Singapore | `Asia Pacific (Singapore)` |
-| Japan, Tokyo | `Asia Pacific (Tokyo)` |
-| Korea, Seoul | `Asia Pacific (Seoul)` |
-| Australia, Sydney | `Asia Pacific (Sydney)` |
-| India, Mumbai | `Asia Pacific (Mumbai)` |
-| Hong Kong | `Asia Pacific (Hong Kong)` |
-| Jakarta, Indonesia | `Asia Pacific (Jakarta)` |
-| Germany, Frankfurt | `Europe (Frankfurt)` |
-| Ireland, Dublin | `Europe (Ireland)` |
-| UK, London | `Europe (London)` |
-| Paris, France | `Europe (Paris)` |
-| Stockholm, Sweden | `Europe (Stockholm)` |
-| US East, Virginia, New York | `US East (N. Virginia)` |
-| US West, Oregon, California | `US West (Oregon)` |
-| Canada, Toronto | `Canada (Central)` |
-| Brazil, São Paulo | `South America (São Paulo)` |
-| Middle East, UAE, Dubai | `Middle East (UAE)` |
-| No geographic signal | `US East (N. Virginia)` |
+Scan the prompt and conversation for geographic signals. See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full signal→region table. Default: `US East (N. Virginia)`.
 
 **Step 1-P4: Populate All Fields — Use `<TODO>` for Unknown Human Fields**
 
-Derive every proposal field. For fields that require real human input and cannot be inferred, write the literal string `<TODO>` as the value — these will appear as visible placeholders in the final DOCX so the user knows exactly what to fill in.
-
-| Field | Rule |
-|-------|------|
-| `title` | Derive from domain (e.g. "AI-Powered Smart Healthcare Monitoring & Early Warning System") |
-| `partner` | `<TODO>` |
-| `contact.name` | `<TODO>` |
-| `contact.title` | `<TODO>` |
-| `contact.email` | `<TODO>` |
-| `pdm` | `<TODO>` |
-| `sa` | `<TODO>` |
-| `solution_type` | Infer from domain |
-| `customer_type` | Infer from described users |
-| `pain_point` | Summarise the problem (1–2 sentences) |
-| `summary` | Write a 3–5 sentence executive summary |
-| `features` | List 5–8 bullet points from capabilities mentioned |
-| `justification` | Write 2–3 sentences on business value |
-| `region` | Detect from Step 1-P3 |
-| `aws_funding` | `"USD 80,000"` |
-| `labor_cost` | `"USD 60,000"` |
-| `total_cost` | `"USD 140,000"` |
-| `start_date` | First day of month 3 months from today |
-| `end_date` | 6 months after start |
-| `release_date` | 1 month after end |
-| `total_mandays` | ≤8 services → 60, 9–12 → 90, ≥13 → 120 |
-| `phases` | 4 phases: Discovery → Foundation → Core Build → Delivery |
-| `calculator_link` | `""` (empty; filled by Step 3B) |
-| `applied_services` | `[]` (empty; filled by Step 3B) |
-| `public_or_not` | `"No"` |
-| `case_study` | `"Yes"` |
-| `details.update.customer` | `"N/A"` (revision history field — blank for new proposals) |
-| `details.update.feature` | `"N/A"` |
-| `details.update.opportunity` | `"N/A"` |
-| `details.update.pain_point` | `"N/A"` |
-| `details.update.publish_date` | `"N/A"` |
-| `business.additional_info` | `"N/A"` |
+See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full field→rule table. Key defaults: `aws_funding` = `"USD 80,000"`, `labor_cost` = `"USD 60,000"`, `total_cost` = `"USD 140,000"`. Human identity fields (`partner`, `contact.*`, `pdm`, `sa`) → `<TODO>`.
 
 **Proceed immediately to Step 2** — do not wait for user confirmation.
 
@@ -1023,162 +923,6 @@ Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
 
 **Verification:** All three files exist on disk AND `calculator_link` is a valid `https://calculator.aws/#/estimate?id=<hash>` URL.
 
----
-
-### Step 8 — Deploy Minimal Demo Architecture
-
-After Step 7 passes, deploy a minimal live demo of the architecture to AWS. **This step is mandatory — do not skip it, do not ask the user if they want to deploy.**
-
-The demo is intentionally small — a fluff stack to prove the services wire together. Its purpose is proof-of-connectivity, not production scale. Use minimal configurations only. Never use proposal calculator numbers here.
-
-#### 8A — Identify the core deployable services
-
-Read `output/{ProjectName}/context.json`. From `sandbox.architecture.applied_services` (or `sandbox.business.service_list` if applied_services is absent), identify the services that form the **main data flow** described in `sandbox.architecture.description`.
-
-Filter to only services that CloudFormation can provision as real resources:
-
-| Deployable via CloudFormation | Skip — API-only, no resource to provision |
-|---|---|
-| Lambda, DynamoDB, S3, SQS, SNS, API Gateway, Kinesis, EventBridge, RDS, ElastiCache, EKS, Fargate, CloudFront, Step Functions, Cognito, OpenSearch, Secrets Manager, Redshift, VPC, CloudWatch, IoT Core, Glue, ECS, MSK | Bedrock, SageMaker, Comprehend, Rekognition, Textract, Polly, Transcribe, Translate, QuickSight, and any other service that has no provisionable resource |
-
-From the deployable set, keep only the **3 to 5 services** most central to the data flow. Drop supporting services (CloudWatch, VPC, Secrets Manager, IAM) unless they are core to the architecture — CloudWatch alarms may be included as they are lightweight and free.
-
-#### 8B — Derive the stack name and region
-
-- **Stack name**: `demo-{service1}-{service2}-{service3}-{YYYYMMDD}` — lowercase, hyphens, max 4 services in the name
-- **Region code**: the AWS region code from `sandbox.business.region` (e.g. `ap-southeast-1` for Singapore, `ap-south-1` for Mumbai)
-- **Template file**: `output/{ProjectName}/demo-stack.yaml`
-
-#### 8C — Read the aws-cdk-development skill and deploy
-
-Read `.github/skills/aws-cdk-development/SKILL.md` fully before writing anything.
-
-Then follow this exact sequence:
-
-**8C-1: Verify AWS credentials (single command):**
-
-```bash
-aws sts get-caller-identity --output json
-```
-
-If it fails, stop and tell the user their credentials are not reachable. Do not continue.
-
-**8C-2: Write the CloudFormation template.**
-
-Write `output/{ProjectName}/demo-stack.yaml` — a minimal CloudFormation YAML that provisions only the services from 8A and wires them together. Use these demo configurations:
-
-| Service | CloudFormation resource | Demo config |
-|---|---|---|
-| AWS Lambda | `AWS::Lambda::Function` | Runtime: python3.12, memory 128 MB, timeout 30s, inline ZipFile handler that logs the event and returns 200 |
-| Amazon SQS | `AWS::SQS::Queue` + `AWS::Lambda::EventSourceMapping` | VisibilityTimeout 30s; EventSourceMapping BatchSize 10 pointing at the Lambda |
-| Amazon SNS | `AWS::SNS::Topic` + `AWS::SNS::Subscription` | Protocol: sqs, Endpoint: queue ARN |
-| Amazon DynamoDB | `AWS::DynamoDB::Table` | BillingMode: PAY_PER_REQUEST, one attribute `pk` (String) as KeySchema HASH |
-| Amazon S3 | `AWS::S3::Bucket` | No versioning, no public access |
-| Amazon API Gateway (HTTP) | `AWS::ApiGatewayV2::Api` + Integration + Route | HTTP_PROXY integration to Lambda |
-| Amazon Kinesis | `AWS::Kinesis::Stream` | ShardCount: 1 |
-| Amazon EventBridge | `AWS::Events::Rule` | ScheduleExpression: rate(5 minutes), targets Lambda |
-| Amazon CloudWatch Alarm | `AWS::CloudWatch::Alarm` | MetricName: Errors, Namespace: AWS/Lambda, threshold 1 |
-| Amazon Cognito | `AWS::Cognito::UserPool` | Minimal, email auto-verify |
-| AWS Step Functions | `AWS::StepFunctions::StateMachine` | Single Pass state definition |
-| Amazon RDS | `AWS::RDS::DBInstance` | DBInstanceClass: db.t3.micro, Engine: mysql, AllocatedStorage: 20 — requires VPC |
-| Amazon VPC (auto-add) | `AWS::EC2::VPC` + subnets | Required whenever RDS, ElastiCache, EKS, or Fargate are in the stack |
-
-Rules for the template:
-- Add an IAM Role for Lambda with `AWSLambdaBasicExecutionRole` and inline policies only for the services it interacts with (SQS, DynamoDB, S3, Kinesis, SNS — only those present in 8A)
-- Add `DeletionPolicy: Delete` on all resources so teardown is clean
-- Add `Outputs:` for every meaningful ARN, URL, or name the user might want
-- Inline the Lambda handler as a `ZipFile` — do not reference an S3 bucket for code
-- Do not add encryption, multi-AZ, or any production safety feature — this is a fluff stack
-
-**8C-3: Validate the template:**
-
-```bash
-aws cloudformation validate-template \
-  --template-body file://output/{ProjectName}/demo-stack.yaml \
-  --region {region-code}
-```
-
-If validation fails, read the error, fix `demo-stack.yaml`, and retry until it exits 0.
-
-**8C-4: Deploy:**
-
-```bash
-aws cloudformation deploy \
-  --template-file output/{ProjectName}/demo-stack.yaml \
-  --stack-name {stack-name} \
-  --capabilities CAPABILITY_IAM \
-  --region {region-code} \
-  --no-cli-pager
-```
-
-Wait for the command to exit naturally. Do not interrupt it. Do not run it a second time while it is running.
-
-If deploy exits non-zero, check the CloudFormation events:
-
-```bash
-aws cloudformation describe-stack-events \
-  --stack-name {stack-name} \
-  --region {region-code} \
-  --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].{Resource:LogicalResourceId,Reason:ResourceStatusReason}" \
-  --output table --no-cli-pager
-```
-
-Read the failure reason, fix `demo-stack.yaml`, then re-run validation and deploy.
-
-**8C-5: Confirm CREATE_COMPLETE and collect outputs:**
-
-```bash
-aws cloudformation describe-stacks \
-  --stack-name {stack-name} \
-  --region {region-code} \
-  --query "Stacks[0].{Status:StackStatus,Outputs:Outputs}" \
-  --output json --no-cli-pager
-```
-
-`StackStatus` must be `CREATE_COMPLETE`. Collect all `Outputs` values for 8D.
-
-**8C-6: Quick smoke test (pick whichever fits the deployed services):**
-
-- **If SNS is deployed:** publish a test message and confirm the Lambda ran via CloudWatch Logs
-  ```bash
-  aws sns publish --topic-arn {TopicArn} --message "demo-test" --region {region-code} --no-cli-pager
-  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
-  ```
-- **If SQS only:** send a message directly to the queue
-  ```bash
-  aws sqs send-message --queue-url {QueueUrl} --message-body "demo-test" --region {region-code} --no-cli-pager
-  aws logs tail /aws/lambda/{LambdaName} --format short --since 5m --region {region-code} --no-cli-pager
-  ```
-- **If API Gateway is deployed:** curl the endpoint
-  ```bash
-  curl -s {ApiEndpoint}
-  ```
-
-A REPORT line in the Lambda logs confirms the function was invoked successfully.
-
-#### 8D — Print confirmation
-
-Once `CREATE_COMPLETE` is confirmed, print:
-
-```
-Demo deployed — {stack-name} ({region-code})
-
-  Services   : {comma-separated list from 8A}
-  Data flow  : {one-line summary from architecture.description}
-  Stack      : https://console.aws.amazon.com/cloudformation/home?region={region-code}#/stacks
-  Template   : output/{ProjectName}/demo-stack.yaml
-
-  Outputs:
-  {each key: value from CloudFormation Outputs}
-
-  To tear down:
-  aws cloudformation delete-stack --stack-name {stack-name} --region {region-code}
-
-This is a minimal demo stack. Production sizing and cost estimate are in the proposal.
-```
-
----
-
 ## Updating an Existing Proposal
 
 1. Load the saved context JSON
@@ -1213,12 +957,7 @@ This is a minimal demo stack. Production sizing and cost estimate are in the pro
 15. **Copying or reusing context.json from an existing similar output folder** — this silently carries over stale service sets, wrong calculator links, and wrong timestamps; always start from scratch
 16. **Saying "if the calculator can't be completed I'll report the blocker"** — there is no acceptable partial-completion exit; retry the browser automation until it succeeds
 17. **Not writing `expected_services.json` at Step 2B** — without this file, Step 4/5/6 gates cannot detect service list tampering
-18. **Stopping after Step 7 without running Step 8** — the demo deploy is mandatory; the run is not complete until the CloudFormation stack is CREATE_COMPLETE in AWS
-19. **Passing production calculator numbers to Step 8** — the demo uses the minimal sizing table in Step 8C, never the proposal's calculator values
-20. **Including API-only services in the Step 8 deploy list** — Bedrock, SageMaker, and other API-only services have no CloudFormation resource; filter them out in 8A
-21. **Deploying all proposal services instead of the core 3–5** — the demo exists to prove the data flow, not replicate production; keep it minimal and cost-safe
-22. **Running Step 8 deploy a second time while the first is still running** — check CloudFormation stack status first; if CREATE_IN_PROGRESS, wait for natural exit
-22. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
+18. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
 23. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
 24. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
 
