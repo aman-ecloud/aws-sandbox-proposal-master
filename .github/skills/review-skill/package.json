@@ -1,0 +1,25 @@
+{
+  "name": "@sdx/sdx-aws-review-skill",
+  "version": "1.0.0",
+  "description": "AWS Sandbox Proposal review skill — validates service consistency between the proposal plan, AWS Calculator estimate, and architecture diagram, and verifies DOCX content integrity.",
+  "keywords": [
+    "sdx",
+    "ai",
+    "skill",
+    "aws",
+    "review",
+    "validation"
+  ],
+  "license": "MIT",
+  "files": [
+    "SKILL.md",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "npx skills experimental_sync -y"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.dev.ecvhrm.com/repository/npm-dx/",
+    "access": "public"
+  }
+}

@@ -176,33 +176,33 @@ Scan the user's prompt AND any surrounding conversation for geographic signals. 
 | Canada, Toronto | `Canada (Central)` |
 | Brazil, São Paulo | `South America (São Paulo)` |
 | Middle East, UAE, Dubai | `Middle East (UAE)` |
-| No geographic signal | `US East (N. Virginia)` |
+| No geographic signal | `Asia Pacific (Taipei)` ← default from `configs/defaults.json` |
 
 ### Stage 4 — Default Business Fields
 
 Use these defaults when the user has not provided them. **Do not ask — just use the default or `<TODO>` and proceed.**
 
-Fields that require real human input (names, emails) use the literal string `<TODO>` so they appear as visible placeholders in the final DOCX.
+All numeric defaults are read from `configs/defaults.json` — do not hard-code them here. Fields that require real human input (names, emails) use the literal string `<TODO>` so they appear as visible placeholders in the final DOCX.
 
 | Field | Default / rule |
 |-------|----------------|
-| `partner` | `<TODO>` |
+| `partner` | value from `configs/defaults.json` → `"eCloudvalley"` |
 | `contact.name` | `<TODO>` |
 | `contact.title` | `<TODO>` |
 | `contact.email` | `<TODO>` |
 | `pdm` | `<TODO>` |
 | `sa` | `<TODO>` |
-| `region` | Detected in Stage 3b; fallback `"US East (N. Virginia)"` |
-| `aws_funding` | `"USD 80,000"` |
-| `labor_cost` | `"USD 60,000"` |
-| `total_cost` | `"USD 140,000"` |
-| `start_date` | First day of month 3 months from today |
-| `end_date` | 6 months after start_date |
-| `release_date` | 1 month after end_date |
+| `region` | Detected in Stage 3b; fallback = `configs/defaults.json` → `"Asia Pacific (Taipei)"` |
+| `aws_funding` | from `configs/defaults.json` → `"USD 80,000"` |
+| `labor_cost` | from `configs/defaults.json` → `"USD 60,000"` |
+| `total_cost` | from `configs/defaults.json` → `"USD 140,000"` |
+| `start_date` | Computed by `scaffold_context.py` (3 months from today, first of month) |
+| `end_date` | Computed by `scaffold_context.py` (6 months after start) |
+| `release_date` | Computed by `scaffold_context.py` (1 month after end) |
 | `calculator_link` | `""` (filled by Step 3B) |
 | `applied_services` | `[]` (filled by Step 3B) |
-| `public_or_not` | `"No"` |
-| `case_study` | `"Yes"` |
+| `public_or_not` | from `configs/defaults.json` → `"No"` |
+| `case_study` | from `configs/defaults.json` → `"Yes"` |
 
 ---
 

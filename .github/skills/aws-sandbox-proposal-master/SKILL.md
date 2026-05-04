@@ -20,29 +20,71 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 
 > ## ⚡ SPEED RULES — Read Once, Execute Immediately
 
-> **Do NOT spend more than two file reads before starting Step 0.**
+> **Read this entire SKILL.md before doing anything.** If the file is long, read it in multiple chunks (lines 1–400, then 401–800, etc.) until you reach the end. Do NOT start executing after reading only the first chunk.
 >
 > The only pre-execution reads required are:
-> 1. This file (`SKILL.md`) — read once, fully
+> 1. This file (`SKILL.md`) — read once, **fully to the end**
 > 2. `references/AWS_CALCULATOR_GUIDE.md` — read once before Step 3B
 >
 > Do NOT run regex searches across skill files to "locate" commands or "confirm" schema fields before starting. Do NOT search `generate_proposal.py`, `verify_proposal.py`, `CONTEXT_SCHEMA.md`, `DIAGRAM_GUIDE.md`, or any other reference file before executing. All commands are in this file and in `AWS_CALCULATOR_GUIDE.md`. Searching them via `Searched for regex` before acting is pre-flight probing and wastes 3–5 minutes on a standard run.
 >
 > Do NOT run `Get-ChildItem -Recurse` on the skill folder. Do NOT read `review-skill/SKILL.md` before finishing Step 3B.
+>
+> **After finishing this file, your very first tool call MUST be a Bash call to run Step 0:**
+> ```bash
+> bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh
+> ```
+> Not a Write call. Not a TodoWrite. Not a file creation. A Bash call running `init_py_venv.sh`. If that is not your next action, you are violating these instructions.
+
+> ## 🚫 FABRICATION IS FORBIDDEN
+>
+> **This VS Code environment CAN run bash scripts, Python scripts, and browser automation.** Do NOT claim otherwise. The statement "I could not execute the browser automation or DOCX generation in this environment" is WRONG.
+>
+> The three required output files are **only valid when produced by running the actual tools**:
+>
+> | Required output | How to produce it | Forbidden substitutes |
+> |---|---|---|
+> | `architecture.png` | Write Python code using the `diagrams` library, execute with `.venv` Python | `architecture.mmd`, `architecture.md`, any text file |
+> | `Proposal.docx` | Run `python .github/skills/aws-sandbox-proposal-master/scripts/generate_proposal.py` | `Proposal.md`, `proposal.txt`, any markdown |
+> | Real `calculator_link` URL | VS Code browser + `page.evaluate()` injection per Step 3B | `cost_estimate.txt`, fake URL, placeholder |
+>
+> **Scripts that exist** (use only these): `init_py_venv.sh`, `diagrams_resolver.py`, `generate_proposal.py`
+> **Scripts that do NOT exist** (never invent these): `generate_diagram.py`, `run_calculator_automation.py`, `run_browser.py`
+>
+> If a script or browser step fails, diagnose and retry. Do NOT substitute a hand-written file.
+>
+> **`expected_services.json` is produced only by running `lock_services.py` in Step 2B** — not upfront, not by hand. Any other time you create it is fabrication.
+>
+> **Writing a file by hand is NEVER completing a step.** Each step requires running actual bash scripts, Python scripts, or browser automation. The file is a byproduct of those scripts running. If you write the file without running the script, the step is NOT done.
+>
+> **Step 0 must run before any file is created.** Do not write context.json, do not create the output folder, do not mark any todo complete until `init_py_venv.sh` has exited 0.
 
 ## Run the full pipeline every time
 
-Run every step in order. Do not stop in the middle to ask what to do next. Do not skip steps.
+Run every step in order without stopping. This skill is used by non-technical people — they cannot make technical decisions mid-run. **Resolve every error, ambiguity, and missing value autonomously and continue.**
 
 **Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7**
 
+- **Never direct a question or choice at the user during a run.** If the next action is unclear, decide and execute — do not ask. If a step fails, fix and retry — do not report the failure and wait. The run ends only when `context.json`, `architecture.png`, and `Proposal.docx` exist on disk and the DOCX is delivered.
+- **When a step fails:** diagnose the error, fix it, and retry in the same run. Resolve it autonomously.
+- **When the prompt is vague:** infer all missing values using PROMPT_PARSER.md rules. Use `<TODO>` only for fields that require real human identity (name, email, partner). For everything else — services, region, architecture, costs — infer and proceed immediately.
 - **Step 3B (AWS Calculator):** Open the browser, add all services, get a real share link. Do not deliver without it. Do not leave `calculator_link` blank. If it is blank, `generate_proposal.py` will fail and you cannot move forward — so finish Step 3B first.
 - **Do not reuse an old `context.json`.** Every run creates a new folder with a fresh `context.json`.
 - **Do not shrink the service list.** If the proposal has 12 services, all 12 go into the calculator. Do not reduce it.
 - **Do not say the calculator link is "pending" or "coming next".** Get it now, in this run.
 - **Do not read `scripts/chrome_browser.py`.** It is not used. Use the VS Code browser tools instead.
 
-When this run ends, the output folder must have: `context.json`, `architecture.png`, and `Proposal.docx`.
+Output files are **produced by running their step's scripts** — writing them by hand is always fabrication:
+
+| File | Produced by | ❌ Never write manually as |
+|---|---|---|
+| `patch.json` | Agent writes this flat JSON in Step 2A | any other format or upfront |
+| `context.json` | `scaffold_context.py` (Step 2A) | hand-crafted JSON |
+| `expected_services.json` | `lock_services.py` (Step 2B) | upfront placeholder |
+| `architecture.png` | `diagrams_resolver.py` + `.venv` Python (Step 3A) | `architecture.mmd`, any text file |
+| `Proposal.docx` | `generate_proposal.py` (Step 5) | `Proposal.md`, `proposal.txt`, markdown |
+
+`cost_estimate.txt`, `architecture.md`, `Proposal.md` — these do not exist in this workflow; do not create them.
 
 ## Execution Model (Copilot SKILL)
 
@@ -86,10 +128,8 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
       (async function configure...(params) {
         // ... full file content pasted here verbatim — do not shorten or rewrite it ...
       })({
-        region: 'Asia Pacific (Mumbai)',
+        region: 'Asia Pacific (Taipei)',
         numberOfRequests: 4000000,
-        requestDurationMs: 300,
-        memoryMainValue: 1024,
       });
       `);
       await page.waitForURL('**/addService**', { timeout: 30000 }).catch(() =>
@@ -97,6 +137,8 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
       );
       await page.waitForLoadState('networkidle');
       ```
+      **If injection throws a quoting or syntax error:** the pasted script content has backtick characters conflicting with the outer template literal. Fix: replace every `` ` `` in the pasted script with `` \` `` and retry immediately. Do not ask the user.
+
    c. **Both wait lines are required.** `waitForURL` waits for the post-save redirect. `waitForLoadState('networkidle')` waits for React to finish rendering. Without both, the next script starts on a page that is still loading.
 
 3. Watch the console output:
@@ -116,208 +158,7 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
 
 ### After GROUP B: Write the script for next time
 
-**Every time you successfully add a GROUP B service via manual Playwright, you must immediately write a new `.js` file for it** at:
-
-```
-.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ExactServiceName}.js
-```
-
-Where `{ExactServiceName}` is the exact name from `assets/aws_services.json` (the same name used to search in the calculator), with spaces replaced by underscores — e.g. `Amazon_Kinesis_Data_Streams.js`.
-
-#### What the script must do
-
-The script must replicate — using React synthetic events — exactly the same steps you just performed manually with Playwright. It must:
-
-1. Search for the service by name
-2. Click Configure
-3. Set the region
-4. Fill every numeric or dropdown field you touched
-5. Click "Save and add service"
-6. Print `[ServiceName] Saved successfully!` on success
-
-#### Script template — use this structure exactly
-
-The structure must match the existing scripts precisely. Read `scripts/calculator/AWS Lambda.js` as the reference — every generated script follows the same 4-phase pattern with the same helper set.
-
-```javascript
-/**
- * {Exact Service Name} - AWS Pricing Calculator Script
- *
- * Service name  : {Exact Service Name}
- * Configure URL : https://calculator.aws/#/createCalculator/{ServiceSlug}
- *
- * Auto-generated after GROUP B manual fill on {date}.
- * Inject via page.evaluate() — do NOT use require/fs.
- */
-
-(async function configure{ShortName}(params) {
-
-  // -- DEFAULT CONFIGURATION -------------------------------------------------
-  // Every field touched during the manual GROUP B fill appears here.
-  // Defaults are realistic mid-range values for a medium-scale workload.
-  // PRICING IMPACT: true = changing this value changes the monthly estimate.
-  const config = {
-    // Region | PRICING IMPACT: true
-    region: params?.region ?? 'Asia Pacific (Mumbai)',
-
-    // {Field description} | PRICING IMPACT: {true/false}
-    {paramName}: params?.{paramName} ?? {sensibleDefault},
-
-    // Add one entry per field you filled during the manual run.
-    // Use the same naming convention as AWS Lambda.js:
-    //   numberOfX, durationMs, storageGb, requestsPerMonth, retentionHours, etc.
-    // Choose defaults that represent a realistic SMB/mid-scale workload —
-    // not minimal (1 request/month) and not production-max.
-    // Examples by field type:
-    //   request counts  → 1_000_000 to 10_000_000 per month
-    //   data sizes      → 100 GB
-    //   durations       → realistic for the service (e.g. 200ms for Lambda, 24h for Kinesis retention)
-    //   instance counts → 1 or 2 nodes
-    //   storage         → 100–500 GB
-  };
-
-  console.log('[{ShortName}] Starting with config:', config);
-
-  // -- HELPERS ---------------------------------------------------------------
-
-  function jitter(min = 80, max = 350) {
-    return new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min + 1)) + min));
-  }
-  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-  function scrollTo(el) { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-
-  function setInputValue(el, value) {
-    if (!el) return;
-    scrollTo(el);
-    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
-    setter.call(el, String(value));
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  async function waitForElement(selector, timeout = 12000) {
-    const deadline = Date.now() + timeout;
-    while (Date.now() < deadline) {
-      const el = document.querySelector(selector);
-      if (el) return el;
-      await wait(300);
-    }
-    console.warn('[{ShortName}] waitForElement timed out:', selector);
-    return null;
-  }
-
-  function findInputsByAriaContains(text) {
-    return [...document.querySelectorAll('input, textarea')]
-      .filter(el => (el.getAttribute('aria-label') || '').includes(text));
-  }
-
-  async function setFieldByAria(text, value, index = 0) {
-    const all = findInputsByAriaContains(text);
-    const el = all[index] || null;
-    if (!el) { console.warn('[{ShortName}] Field not found:', text, 'index', index); return; }
-    await jitter();
-    setInputValue(el, value);
-    await jitter(100, 300);
-  }
-
-  async function clickRadioByExactAria(text) {
-    const radio = [...document.querySelectorAll('input[type="radio"]')]
-      .find(r => (r.getAttribute('aria-label') || '') === text);
-    if (!radio) { console.warn('[{ShortName}] Radio not found:', text); return; }
-    if (!radio.checked) { scrollTo(radio); await jitter(); radio.click(); await jitter(100, 300); }
-  }
-
-  // -- PHASE 1 : NAVIGATE ----------------------------------------------------
-
-  if (!window.location.hash.includes('/addService') &&
-      !window.location.hash.includes('/createCalculator/{ServiceSlug}')) {
-    window.location.hash = '#/addService';
-    await wait(2500);
-  }
-
-  // -- PHASE 2 : SEARCH AND CONFIGURE ----------------------------------------
-
-  if (window.location.hash.includes('/addService')) {
-    const searchAllRadio = [...document.querySelectorAll('input[type="radio"]')]
-      .find(r => (r.closest('label, div')?.textContent || '').includes('Search all services'));
-    if (searchAllRadio && !searchAllRadio.checked) {
-      scrollTo(searchAllRadio); await jitter(200, 400); searchAllRadio.click(); await wait(800);
-    }
-
-    const searchBox = await waitForElement(
-      'input[placeholder="Search for a service"], input[aria-label="Find Service"], input[role="searchbox"]'
-    );
-    if (searchBox) {
-      scrollTo(searchBox); await jitter(200, 500);
-      setInputValue(searchBox, '{Exact Service Name}');
-      await wait(1800);
-    }
-
-    const configBtn = [...document.querySelectorAll('button')]
-      .find(b => b.textContent.trim() === 'Configure' &&
-                 b.closest('li, article')?.textContent?.includes('{Exact Service Name}'));
-    if (configBtn) {
-      scrollTo(configBtn); await jitter(250, 600); configBtn.click(); await wait(5000);
-    } else {
-      console.warn('[{ShortName}] Configure button not found'); return;
-    }
-  }
-
-  // -- PHASE 3 : FILL FORM ---------------------------------------------------
-  // Use the exact aria-label strings observed during the manual GROUP B fill.
-  // Use setFieldByAria() for numeric inputs, clickRadioByExactAria() for radio buttons.
-  // If a field has multiple inputs with the same aria-label, use the index param.
-
-  await waitForElement('h1, input[aria-label*="Region"]', 15000);
-
-  // Region dropdown — copy the pattern from Amazon DynamoDB.js or Amazon SQS.js
-  // (find the region button, click it, find the option, click it)
-
-  // {Fill each field here, one call per field}
-  await setFieldByAria('{exact aria-label of field 1}', config.{paramName1});
-  await setFieldByAria('{exact aria-label of field 2}', config.{paramName2});
-  // ...
-
-  // -- PHASE 4 : SAVE --------------------------------------------------------
-
-  await jitter(400, 800);
-  const saveBtn = [...document.querySelectorAll('button')]
-    .find(b => b.textContent.trim() === 'Save and add service');
-  if (saveBtn) {
-    scrollTo(saveBtn); await jitter(300, 600);
-    saveBtn.click();
-    console.log('[{ShortName}] Saved successfully!');
-  } else {
-    console.warn('[{ShortName}] Save and add service button not found');
-  }
-
-})({
-  // Override defaults for this specific proposal run.
-  // Only list the params that differ from the defaults above.
-  // Example:
-  //   region: 'US East (N. Virginia)',
-  //   numberOfShards: 5,
-  //   retentionHours: 168,
-});
-```
-
-#### Rules for the generated script
-
-- **Use `params?.field ?? defaultValue`** for every config entry — never `params.field` (crashes if params is undefined) and never a bare literal (makes the value non-overridable)
-- **Defaults must be realistic mid-range values** — not 1 (too minimal to be useful) and not the proposal's production numbers (those belong in the `})({...})` override block at call time). Think: what would a typical SMB workload look like?
-  - Request counts: 1 000 000–10 000 000 per month
-  - Data/storage: 100–500 GB
-  - Durations: realistic for the service (e.g. 200 ms for a Lambda, 24 h for a Kinesis stream retention)
-  - Node/instance counts: 1–2
-- **Use the same helper set** (jitter, wait, scrollTo, setInputValue, waitForElement, findInputsByAriaContains, setFieldByAria, clickRadioByExactAria) — do not invent new helpers; the existing ones cover every case
-- **Use exact aria-label strings** from the live DOM — copy them character-for-character from what you observed during the manual fill; do not paraphrase
-- **The `})({...})` override block at the bottom** is where the proposal's actual values go when the script is injected during a run — leave it with only comments in the generated file; the agent fills it at inject time
-- **Test mentally:** re-read the script after writing and confirm every field touched during the manual fill has a corresponding `setFieldByAria` or `clickRadioByExactAria` call
-
-#### After writing the script
-
-Update the "Available scripts" count/list in this SKILL.md header to include the newly created service, so future runs know it is now GROUP A.
+**Every time you successfully add a GROUP B service, immediately write a `.js` script for it** so the next run treats it as GROUP A. Follow [references/SCRIPT_GENERATION_GUIDE.md](references/SCRIPT_GENERATION_GUIDE.md) for the full template and rules. Then update the "Available scripts" count/list in this SKILL.md header.
 
 ## When to Use This Skill
 
@@ -425,8 +266,19 @@ Hard dependency rule:
 
 ### Step 0 — Environment Check (MANDATORY)
 
-**Run this before anything else.** The bundled `scripts/diagrams_resolver.py` checks all required dependencies and guides installation of anything missing.
+**Notice:**
+- MUST NOT ask the user to configure the interpreter environment under any circumstance.
+- MUST NOT configure the environment manually — everything must go through the scripts below only.
 
+**Run this immediately, before anything else:**
+
+```bash
+bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh
+```
+
+> MUST NOT change directory. MUST NOT create a virtual environment by yourself. The script creates `.venv` in the current working directory and installs all dependencies there. Changing directory will cause Python scripts to fail.
+
+**Then verify dependencies:**
 
 ```bash
 python <skill_dir>/scripts/diagrams_resolver.py check
@@ -494,7 +346,7 @@ Read `assets/aws_services.json`. For each capability, pick the best-fit service 
 
 **Step 1-P3: Detect Region**
 
-Scan the prompt and conversation for geographic signals. See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full signal→region table. Default: `US East (N. Virginia)`.
+Scan the prompt and conversation for geographic signals. See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full signal→region table. Default (when no signal is found): `Asia Pacific (Taipei)` — as configured in `configs/defaults.json`.
 
 **Step 1-P4: Populate All Fields — Use `<TODO>` for Unknown Human Fields**
 
@@ -522,78 +374,73 @@ Organize the information into the context JSON structure. Use Markdown in text f
 
 #### Step 2A Output Contract (MANDATORY)
 
-**First, compute the unique project name and create the subfolder:**
+**Step 2A — Create project folder and write `context.json` via script (MANDATORY)**
+
+**a. Compute the project folder name and create it:**
 
 ```bash
 # {SafeTitle} = title with spaces→underscores, non-alphanumeric removed, max 60 chars
 # {YYYYMMDD_HHMM} = current timestamp
-# Example: output/AI-Powered_Smart_Healthcare_Monitoring_20260330_1423/
-
+# Example: output/Personalized_Fitness_Platform_20260504_1000/
 mkdir -p "output/{SafeTitle}_{YYYYMMDD_HHMM}"
 ```
 
-Store the computed `{ProjectName}` string and use it consistently for all three artifact paths in this run. Never reuse a folder from a previous run.
+Store `{ProjectName}` and use it for all artifact paths in this run.
 
-Persist the plan to:
-
-```text
-output/{ProjectName}/context.json
-```
-
-Every artifact for this project — context JSON, architecture PNG, and Proposal DOCX — goes inside `output/{ProjectName}/`. This keeps runs for different projects separate and prevents files from one proposal overwriting another.
-
-The file is the only accepted source for Step 3A and Step 3B. Add these fields:
-
-- `sandbox.business.region` (required)
-- `sandbox.business.service_list` (required)
-
-`service_list` item format — use the **exact calculator display name** from `assets/aws_services.json`:
+**b. Write a flat `patch.json` with the fields you determined in Step 1:**
 
 ```json
 {
-  "service_name": "Amazon Simple Storage Service (S3)",
-  "calculator_config": {
-    "storage_gb": 10,
-    "put_requests": 400,
-    "get_requests": 400
-  },
-  "diagram_tags": ["storage", "edge"]
+  "title": "{inferred title}",
+  "region": "{detected region, or Asia Pacific (Taipei) if none}",
+  "solution_type": "{inferred solution domain}",
+  "customer_type": "{inferred target customer}",
+  "summary": "{executive summary — 2–4 sentences}",
+  "features": "{key features as markdown bullet list}",
+  "pain_point": "{customer pain points as markdown bullet list}",
+  "justification": "{business justification — market size, competitive advantage, expected ROI}",
+  "architecture_description": "{architecture overview — 3–5 sentences}",
+  "services": [
+    { "service_name": "Amazon Simple Storage Service (S3)", "diagram_tags": ["storage"] },
+    { "service_name": "AWS Lambda", "calculator_config": { "numberOfRequests": 2000000 } }
+  ],
+  "phase_descriptions": [
+    "{Phase 1 description}",
+    "{Phase 2 description}",
+    "{Phase 3 description}",
+    "{Phase 4 description}"
+  ]
 }
 ```
 
-> **Critical:** `service_name` must match the exact string in `assets/aws_services.json`. This name is used directly to search the AWS Calculator. Wrong names cause missed services. See Step 3B for the lookup procedure.
+> **`service_name` must exactly match `assets/aws_services.json`.** Wrong names cause calculator search misses. All defaults (funding, dates, mandays, partner) are read from `configs/defaults.json` by the script — do not duplicate them in the patch.
 
-Steps 3A, 3B, and 3C must fail-fast if either field is missing.
-
-**Input:** Structured data from Step 1.
-
-**Output:** `output/{ProjectName}/context.json`.
-
-**Save rule:** Required.
-
-**Verification:** JSON exists, parses, and includes `sandbox.business.region` and non-empty `sandbox.business.service_list`.
-
-#### Step 2B — Write Immutable Service Reference (MANDATORY)
-
-Immediately after saving `context.json`, snapshot the planned service names into a separate file. This file is the tamper-evident ground truth used by Steps 4, 5, and 6 to verify the calculator was completed for the full original set — not a reduced subset.
+**c. Run the scaffold script to produce `context.json`:**
 
 ```bash
-# Replace {ProjectName} with the actual computed project folder name before running.
-# Example: proj="output/Serverless_Fraud_Detection_20260401_1705"
-proj="output/{ProjectName}"
-python -c "
-import json, sys
-from pathlib import Path
-proj = '$proj'
-ctx = json.loads(Path(proj + '/context.json').read_text(encoding='utf-8'))
-names = [s['service_name'] for s in ctx['sandbox']['business']['service_list']]
-assert len(names) >= 3, f'Too few services ({len(names)}): a valid proposal needs at least 3'
-Path(proj + '/expected_services.json').write_text(json.dumps(names, indent=2), encoding='utf-8')
-print('Locked', len(names), 'expected services:', names)
-"
+python .github/skills/aws-sandbox-proposal-master/scripts/scaffold_context.py \
+  --patch "output/{ProjectName}/patch.json" \
+  --output "output/{ProjectName}/context.json"
 ```
 
-> **Do NOT modify `expected_services.json` after this point.** It is written once here and read-only from this point forward. Steps 4, 5, and 6 all compare against this file — not against `service_list` in context.json, which can be overwritten. If you are tempted to modify it: do not. Fix the calculator estimate instead.
+The script computes all dates, phases, mandays, and defaults automatically. Verify output: `[scaffold_context] Written: output/{ProjectName}/context.json`.
+
+**Input:** Parsed fields from Step 1.
+
+**Output:** `output/{ProjectName}/context.json` (produced by script, not hand-written).
+
+**Verification:** Script exits 0 and prints service count, region, and dates.
+
+#### Step 2B — Lock the Service Reference (MANDATORY)
+
+Immediately after `context.json` is written, snapshot the service names into `expected_services.json`. This is the tamper-evident ground truth Steps 4–6 use to verify the calculator was completed for the full set.
+
+```bash
+python .github/skills/aws-sandbox-proposal-master/scripts/lock_services.py \
+  "output/{ProjectName}/context.json"
+```
+
+> **Do NOT modify `expected_services.json` after this.** It is written once, read-only from here forward. Fix the calculator estimate rather than touching this file.
 
 ### Step 3A — Generate Architecture Diagram (parallel-eligible with Step 3B)
 
@@ -958,8 +805,11 @@ Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
 16. **Saying "if the calculator can't be completed I'll report the blocker"** — there is no acceptable partial-completion exit; retry the browser automation until it succeeds
 17. **Not writing `expected_services.json` at Step 2B** — without this file, Step 4/5/6 gates cannot detect service list tampering
 18. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
-23. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
-24. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
+19. **Writing fake output files instead of running the actual scripts** — `architecture.mmd`, `Proposal.md`, `cost_estimate.txt` are not valid outputs; `architecture.png` must come from the diagrams library, `Proposal.docx` must come from `generate_proposal.py`, the calculator link must come from the browser; fabricating these and continuing is silent failure
+20. **Reading only the first 400 lines of SKILL.md** — the file is longer than 400 lines; if the reader stopped at line 400, it missed the Step 3B injection rules, the step details, and the common mistakes; always read to the end before executing
+21. **Asking "which should I run next?" or offering options** — the pipeline order is fixed; if a step fails, fix and retry autonomously; never present choices to the user
+22. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
+23. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
 
 ## Output Completeness Check
 
@@ -1002,5 +852,6 @@ After each run, summarize what happened and append any new lessons to `reference
 - [references/AWS_CALCULATOR_GUIDE.md](references/AWS_CALCULATOR_GUIDE.md) — Browser automation for AWS Pricing Calculator
 - [references/CALCULATOR_SIZING.md](references/CALCULATOR_SIZING.md) — Service sizing, unit table, and cost sanity check for Step 3B
 - [references/EXAMPLES.md](references/EXAMPLES.md) — Complete proposal examples
+- [references/SCRIPT_GENERATION_GUIDE.md](references/SCRIPT_GENERATION_GUIDE.md) — Template and rules for writing GROUP B calculator scripts
 - [references/LESSONS_LEARNED.md](references/LESSONS_LEARNED.md) — Accumulated lessons from past executions
 - [assets/aws_services.json](assets/aws_services.json) — Canonical AWS Calculator service names (189 services)

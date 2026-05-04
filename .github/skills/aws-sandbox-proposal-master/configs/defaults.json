@@ -1,0 +1,33 @@
+{
+  "_comment": "Centralized defaults for aws-sandbox-proposal-master. Edit here to change defaults across all proposals — do not hard-code values in SKILL.md or PROMPT_PARSER.md.",
+  "region": "Asia Pacific (Taipei)",
+  "partner": "eCloudvalley",
+  "aws_funding": "USD 80,000",
+  "labor_cost": "USD 60,000",
+  "total_cost": "USD 140,000",
+  "public_or_not": "No",
+  "case_study": "Yes",
+  "start_offset_months": 3,
+  "duration_months": 6,
+  "release_offset_months": 1,
+  "phase_templates": {
+    "small": [
+      { "name": "Discovery & Architecture Blueprint", "mandays": 10 },
+      { "name": "Foundation: Data & Integration Layer", "mandays": 15 },
+      { "name": "Core Build: Analytics, ML & APIs",    "mandays": 20 },
+      { "name": "Delivery, Testing & Handover",         "mandays": 10 }
+    ],
+    "medium": [
+      { "name": "Discovery & Architecture Blueprint", "mandays": 15 },
+      { "name": "Foundation: Data & Integration Layer", "mandays": 25 },
+      { "name": "Core Build: Analytics, ML & APIs",    "mandays": 30 },
+      { "name": "Delivery, Testing & Handover",         "mandays": 20 }
+    ],
+    "large": [
+      { "name": "Discovery & Architecture Blueprint", "mandays": 20 },
+      { "name": "Foundation: Data & Integration Layer", "mandays": 30 },
+      { "name": "Core Build: Analytics, ML & APIs",    "mandays": 40 },
+      { "name": "Delivery, Testing & Handover",         "mandays": 30 }
+    ]
+  }
+}

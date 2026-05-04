@@ -1,0 +1,28 @@
+{
+  "name": "@sdx/sdx-aws-sandbox-proposal-master",
+  "version": "1.0.0",
+  "description": "AWS Sandbox Proposal skill — generates architecture diagrams, AWS Calculator estimates, and Word proposal documents for eCloudvalley sandbox funding requests.",
+  "keywords": [
+    "sdx",
+    "ai",
+    "skill",
+    "aws",
+    "sandbox",
+    "proposal"
+  ],
+  "license": "MIT",
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "assets/",
+    "references/",
+    "scripts/"
+  ],
+  "scripts": {
+    "postinstall": "npx skills experimental_sync -y"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.dev.ecvhrm.com/repository/npm-dx/",
+    "access": "public"
+  }
+}
