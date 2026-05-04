@@ -1,0 +1,34 @@
+{
+  "title": "Personalized Fitness & Health Tracking Platform",
+  "region": "Asia Pacific (Taipei)",
+  "solution_type": "AI/ML Personalized Recommendations",
+  "customer_type": "Consumers and Health/Wellness Providers",
+  "summary": "Cloud-based platform that collects user activity and health data from mobile apps and wearables, generates personalized workout and wellness recommendations, tracks progress, and provides insights via dashboards.",
+  "features": "- Continuous activity and biometrics ingestion\n- Personalization engine for workouts and nutrition\n- Progress tracking and historical analytics\n- Secure user identity and data encryption\n- Dashboard insights and alerts",
+  "pain_point": "Users lack continuous personalized guidance and consolidated health insights; providers lack scalable analytics to support personalization.",
+  "justification": "Growing consumer demand for personalized health experiences and provider need for scalable analytics and compliance-ready data handling.",
+  "architecture_description": "Mobile and web clients upload activity and health metrics via API Gateway to ingestion layer (Kinesis/S3). Real-time and batch pipelines process data into analytics stores; ML models in SageMaker/Personalize generate recommendations; dashboards via QuickSight; identity via Cognito.",
+  "services": [
+    { "service_name": "Amazon Cognito" },
+    { "service_name": "Amazon API Gateway" },
+    { "service_name": "AWS Lambda" },
+    { "service_name": "Amazon Kinesis Data Streams" },
+    { "service_name": "Amazon Kinesis Data Firehose" },
+    { "service_name": "Amazon S3" },
+    { "service_name": "Amazon DynamoDB" },
+    { "service_name": "Amazon Athena" },
+    { "service_name": "AWS Glue" },
+    { "service_name": "Amazon SageMaker" },
+    { "service_name": "Amazon Personalize" },
+    { "service_name": "Amazon QuickSight" },
+    { "service_name": "Amazon CloudWatch" },
+    { "service_name": "AWS Key Management Service" },
+    { "service_name": "Amazon SNS" }
+  ],
+  "phase_descriptions": [
+    "Discovery, architecture, compliance scoping, and data contract definition.",
+    "Build ingestion, storage, and core infrastructure; enable identity and security.",
+    "Develop ML models, personalization engine, APIs, dashboards, and integration.",
+    "Testing, performance tuning, documentation, and handover to operations."
+  ]
+}

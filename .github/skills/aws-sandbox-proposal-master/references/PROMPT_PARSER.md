@@ -140,14 +140,61 @@ For each technical capability or requirement mentioned in the description, map i
 
 ---
 
+### Stage 2b — Expand to Minimum 8 Services Using Domain Defaults
+
+**This stage is mandatory for every prompt, especially short or vague ones.**
+
+A short prompt may only produce 1–3 services from Stage 2. That is not enough. Every proposal needs at least 8 services. Use the tables below to fill the gap.
+
+**Step 1 — Add the Universal Baseline**
+
+These 6 services belong in every proposal regardless of domain:
+
+| Service | Role |
+|---|---|
+| `AWS Lambda` | Serverless compute, event-driven logic |
+| `Amazon Simple Storage Service (S3)` | Object storage, data lake, artifacts |
+| `Amazon API Gateway` | REST APIs for any frontend or integration |
+| `Amazon Cognito` | User authentication and authorization |
+| `Amazon CloudWatch` | Metrics, alarms, logs |
+| `AWS CloudTrail` | Audit trail, API logging |
+
+**Step 2 — Add Domain Starter Services**
+
+Find the best-matching domain from Stage 1 and add its starter services:
+
+| Domain | Add these services |
+|---|---|
+| **Web / Mobile App** (fitness, health, lifestyle, consumer, SaaS) | `Amazon DynamoDB`, `Amazon CloudFront`, `Amazon Simple Notification Service (SNS)` |
+| **Industrial IoT / Digital Twin** | `AWS IoT Core`, `Amazon Kinesis Data Streams`, `Amazon Timestream`, `Amazon SageMaker`, `Amazon QuickSight` |
+| **Supply Chain / Logistics** | `Amazon DynamoDB`, `Amazon Forecast`, `AWS Glue`, `Amazon QuickSight`, `Amazon EventBridge` |
+| **Data Platform / Data Lake** | `Amazon Kinesis Data Streams`, `AWS Glue`, `Amazon Athena`, `Amazon Redshift`, `Amazon QuickSight` |
+| **AI / ML Platform** | `Amazon SageMaker`, `Amazon Bedrock`, `Amazon DynamoDB`, `AWS Glue`, `Amazon QuickSight` |
+| **Financial Services** | `Amazon DynamoDB`, `Amazon Redshift`, `AWS Glue`, `Amazon QuickSight`, `AWS Key Management Service` |
+| **Healthcare / Life Sciences** | `Amazon DynamoDB`, `Amazon SageMaker`, `Amazon Comprehend`, `AWS Glue`, `Amazon QuickSight` |
+| **Retail / E-Commerce** | `Amazon DynamoDB`, `Amazon CloudFront`, `Amazon Personalize`, `Amazon Simple Notification Service (SNS)`, `Amazon ElastiCache` |
+| **Energy / Utilities** | `AWS IoT Core`, `Amazon Timestream`, `Amazon Kinesis Data Streams`, `Amazon SageMaker`, `Amazon QuickSight` |
+| **Smart Agriculture / Environment** | `AWS IoT Core`, `Amazon Timestream`, `Amazon SageMaker`, `Amazon Location Service`, `Amazon QuickSight` |
+| **Security / Compliance** | `Amazon GuardDuty`, `AWS Security Hub`, `Amazon OpenSearch Service`, `AWS Key Management Service`, `Amazon EventBridge` |
+| **Developer Platform / SaaS** | `Amazon DynamoDB`, `Amazon CloudFront`, `Amazon EKS`, `Amazon RDS for PostgreSQL`, `Amazon ElastiCache` |
+| **General / Unclear domain** | `Amazon DynamoDB`, `Amazon CloudFront`, `Amazon Simple Notification Service (SNS)`, `Amazon Simple Queue Service (SQS)`, `Amazon QuickSight` |
+
+**Step 3 — Enforce the minimum**
+
+Count: `universal_baseline + domain_starters + stage2_mapped`. If total < 8, add services from this list until you reach 8: `Amazon Simple Notification Service (SNS)`, `Amazon Simple Queue Service (SQS)`, `Amazon EventBridge`, `AWS Step Functions`, `AWS Key Management Service`, `AWS Glue`.
+
+**Step 4 — Remove exact duplicates** (same service from multiple sources). The final list must have no repeated service names.
+
+---
+
 ### Stage 3 — Select the Service Shortlist
 
-After mapping, trim the list:
+Merge the Stage 2 mapped services with the Stage 2b defaults, then:
 
-1. Remove services that are redundant for the described scope
+1. Remove services that are clearly redundant or out of scope for this solution
 2. Prefer managed/serverless variants when scale is not explicitly huge
-3. Always include at least one storage, one compute, one security service
-4. Typical range: **8–15 services** for a solid proposal
+3. **Minimum: 8 services. If below 8, do not trim — add more from the domain table above.**
+4. Maximum: 15 services. If above 15, trim the least relevant ones.
 5. Verify every selected name is present in `assets/aws_services.json`
 
 ---
@@ -318,7 +365,7 @@ The `<TODO>` values for partner, contact, PDM, and SA will appear as visible pla
 | Situation | Handling |
 |-----------|----------|
 | Description mentions a service not in `aws_services.json` | Map to the closest equivalent that IS in the list |
-| Description is only 1–2 sentences | Infer as much as possible; do not ask — pick the most likely services for the domain and proceed |
+| Description is only 1–2 sentences | Apply Stage 2b immediately: use the universal baseline + domain starter stack. The prompt doesn't have enough signals to rely on Stage 2 mapping alone. |
 | Description is in non-English | Parse it anyway; translate key concepts to English service names |
 | Region mentioned in conversation (not in prompt) | Use it — scan the full conversation context, not just the prompt |
 | Region mentioned explicitly in prompt | Use it instead of the default |

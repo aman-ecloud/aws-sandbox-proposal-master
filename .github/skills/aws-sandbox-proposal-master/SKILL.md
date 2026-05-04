@@ -18,46 +18,25 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 
 **Important:** This skill is not for demo purposes. It is designed for real-world use by AWS field teams and partners to create actual proposals that may be submitted for funding consideration. Follow the execution model and guidelines carefully to ensure the generated proposal meets AWS standards and effectively communicates the solution. Do not make any bold assumptions about user intent or skip steps in the workflow, as this may lead to incomplete or non-compliant proposals.
 
-> ## ⚡ SPEED RULES — Read Once, Execute Immediately
+> ## ⚡ SPEED RULES
+>
+> 1. **Read this entire file before doing anything.** Read in chunks (1–400, 401–800, 801+) until the end. Do not execute after only one chunk.
+> 2. **First Bash call after reading:** `bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh`. Not a Write. Not a TodoWrite. Bash only.
+> 3. **Before Step 3B:** read `references/AWS_CALCULATOR_GUIDE.md` and `references/CALCULATOR_SIZING.md`.
+> 4. **Never glob or read inside `output/`** before Step 2A. An existing folder = a previous run — always start fresh with a new timestamp.
+> 5. **Stuck or something failed?** Read `references/CRITICAL_RULES.md` — the short authoritative rule list.
 
-> **Read this entire SKILL.md before doing anything.** If the file is long, read it in multiple chunks (lines 1–400, then 401–800, etc.) until you reach the end. Do NOT start executing after reading only the first chunk.
+> ## 🚫 NEVER DO THESE
 >
-> The only pre-execution reads required are:
-> 1. This file (`SKILL.md`) — read once, **fully to the end**
-> 2. `references/AWS_CALCULATOR_GUIDE.md` — read once before Step 3B
+> - **Write / Edit / Apply Patch on any output file** — all files in `output/{ProjectName}/` must come from Bash + scripts, not direct writes or patches.
+> - **Create `proposal.md` (any case/extension)** — the only proposal output is `Proposal.docx` from `generate_proposal.py` at Step 5.
+> - **Copy `applied_services` from `service_list`** — read it from the live `#/estimate` table after all services are added.
+> - **Reuse an existing output folder** — even if one exists, create a new folder with a new timestamp and run all steps.
+> - **Batch services in one `page.evaluate()`** — one service per call; React state does not carry between calls.
+> - **Run `pip install playwright`** — VS Code provides browser automation built-in; do not install it yourself.
+> - **Ask "Shall I continue?" or offer a menu** — pipeline runs 0→7 without pausing; see banned-phrases list in the pipeline section below.
 >
-> Do NOT run regex searches across skill files to "locate" commands or "confirm" schema fields before starting. Do NOT search `generate_proposal.py`, `verify_proposal.py`, `CONTEXT_SCHEMA.md`, `DIAGRAM_GUIDE.md`, or any other reference file before executing. All commands are in this file and in `AWS_CALCULATOR_GUIDE.md`. Searching them via `Searched for regex` before acting is pre-flight probing and wastes 3–5 minutes on a standard run.
->
-> Do NOT run `Get-ChildItem -Recurse` on the skill folder. Do NOT read `review-skill/SKILL.md` before finishing Step 3B.
->
-> **After finishing this file, your very first tool call MUST be a Bash call to run Step 0:**
-> ```bash
-> bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh
-> ```
-> Not a Write call. Not a TodoWrite. Not a file creation. A Bash call running `init_py_venv.sh`. If that is not your next action, you are violating these instructions.
-
-> ## 🚫 FABRICATION IS FORBIDDEN
->
-> **This VS Code environment CAN run bash scripts, Python scripts, and browser automation.** Do NOT claim otherwise. The statement "I could not execute the browser automation or DOCX generation in this environment" is WRONG.
->
-> The three required output files are **only valid when produced by running the actual tools**:
->
-> | Required output | How to produce it | Forbidden substitutes |
-> |---|---|---|
-> | `architecture.png` | Write Python code using the `diagrams` library, execute with `.venv` Python | `architecture.mmd`, `architecture.md`, any text file |
-> | `Proposal.docx` | Run `python .github/skills/aws-sandbox-proposal-master/scripts/generate_proposal.py` | `Proposal.md`, `proposal.txt`, any markdown |
-> | Real `calculator_link` URL | VS Code browser + `page.evaluate()` injection per Step 3B | `cost_estimate.txt`, fake URL, placeholder |
->
-> **Scripts that exist** (use only these): `init_py_venv.sh`, `diagrams_resolver.py`, `generate_proposal.py`
-> **Scripts that do NOT exist** (never invent these): `generate_diagram.py`, `run_calculator_automation.py`, `run_browser.py`
->
-> If a script or browser step fails, diagnose and retry. Do NOT substitute a hand-written file.
->
-> **`expected_services.json` is produced only by running `lock_services.py` in Step 2B** — not upfront, not by hand. Any other time you create it is fabrication.
->
-> **Writing a file by hand is NEVER completing a step.** Each step requires running actual bash scripts, Python scripts, or browser automation. The file is a byproduct of those scripts running. If you write the file without running the script, the step is NOT done.
->
-> **Step 0 must run before any file is created.** Do not write context.json, do not create the output folder, do not mark any todo complete until `init_py_venv.sh` has exited 0.
+> → Full list with details: `references/CRITICAL_RULES.md`
 
 ## Run the full pipeline every time
 
@@ -65,36 +44,17 @@ Run every step in order without stopping. This skill is used by non-technical pe
 
 **Step 0 → Step 1 → Step 2 → Step 3A + Step 3B → Step 4 → Step 5 → Step 6 → Step 7**
 
-- **Never direct a question or choice at the user during a run.** If the next action is unclear, decide and execute — do not ask. If a step fails, fix and retry — do not report the failure and wait. The run ends only when `context.json`, `architecture.png`, and `Proposal.docx` exist on disk and the DOCX is delivered.
-- **When a step fails:** diagnose the error, fix it, and retry in the same run. Resolve it autonomously.
-- **When the prompt is vague:** infer all missing values using PROMPT_PARSER.md rules. Use `<TODO>` only for fields that require real human identity (name, email, partner). For everything else — services, region, architecture, costs — infer and proceed immediately.
-- **Step 3B (AWS Calculator):** Open the browser, add all services, get a real share link. Do not deliver without it. Do not leave `calculator_link` blank. If it is blank, `generate_proposal.py` will fail and you cannot move forward — so finish Step 3B first.
-- **Do not reuse an old `context.json`.** Every run creates a new folder with a fresh `context.json`.
-- **Do not shrink the service list.** If the proposal has 12 services, all 12 go into the calculator. Do not reduce it.
-- **Do not say the calculator link is "pending" or "coming next".** Get it now, in this run.
-- **Do not read `scripts/chrome_browser.py`.** It is not used. Use the VS Code browser tools instead.
+- **This pipeline is fully autonomous — treat it like running a program, not a conversation.** Once Step 0 starts, every step runs immediately after the previous one completes, with no pause, no check-in, and no message to the user until `Proposal.docx` is delivered in Step 7. The user's only role is the initial prompt. After that, the pipeline runs to the end by itself.
 
-Output files are **produced by running their step's scripts** — writing them by hand is always fabrication:
+- **Never ask for permission to continue, for any reason.** After completing any step or sub-step, immediately start the next one. Do not narrate what you just did and then wait. Do not present a summary and end it with a question. The act of completing a step IS the permission to start the next one.
 
-| File | Produced by | ❌ Never write manually as |
-|---|---|---|
-| `patch.json` | Agent writes this flat JSON in Step 2A | any other format or upfront |
-| `context.json` | `scaffold_context.py` (Step 2A) | hand-crafted JSON |
-| `expected_services.json` | `lock_services.py` (Step 2B) | upfront placeholder |
-| `architecture.png` | `diagrams_resolver.py` + `.venv` Python (Step 3A) | `architecture.mmd`, any text file |
-| `Proposal.docx` | `generate_proposal.py` (Step 5) | `Proposal.md`, `proposal.txt`, markdown |
+- **Banned phrases during the run — never output any of these:** "Shall I continue", "Should I proceed", "Would you like me to", "Do you want me to", "What would you like", "Can I", "May I", "Ready to proceed", "Let me know if", "Is that OK", "Do you approve", "Please confirm", "pick one", "which would you like", or any sentence ending in "?" addressed to the user. A "progress update" that ends with a question or a menu of choices is still asking — it is banned. **The pipeline ends at Step 7 delivery, not at a user menu.**
 
-`cost_estimate.txt`, `architecture.md`, `Proposal.md` — these do not exist in this workflow; do not create them.
+- **If the agent must send an intermediate message** (e.g. a turn-length limit is reached mid-pipeline): state only the last completed step and what step is next — then immediately execute it. Example: `"Step 3A complete. Continuing Step 3B."` — then start Step 3B tool calls in the same message with no gap. Do NOT end the message with a question or wait for the user to say "yes" or "continue". If the user sends any reply at all — even a single word, even blank — treat it as "keep going" and resume from the last incomplete step without re-reading SKILL.md or rebuilding the plan.
 
-## Execution Model (Copilot SKILL)
-
-This project is implemented in the Copilot SKILL workflow style:
-
-- The agent reads `SKILL.md` first, then follows each step in order.
-- The agent references files in `references/` and executes scripts in `scripts/`.
-- No frontend UI integration is required.
-- No external LLM API key flow is required for Step 3B.
-- Step 3B browser actions are performed in the VS Code built-in browser context.
+- **When a step fails:** diagnose, fix, and retry autonomously. Never report a failure and wait.
+- **When the prompt is vague:** infer all missing values using PROMPT_PARSER.md rules. Use `<TODO>` only for human identity fields (name, email, partner, pdm, sa).
+- **Step 3B (AWS Calculator):** Open the browser, add all services, get a real share link. Do not deliver without it — `generate_proposal.py` requires `calculator_link` to be set.
 
 ## Pre-Built Calculator Scripts (.github/skills/aws-sandbox-proposal-master/scripts/calculator/)
 
@@ -276,7 +236,20 @@ Hard dependency rule:
 bash .github/skills/aws-sandbox-proposal-master/scripts/init_py_venv.sh
 ```
 
-> MUST NOT change directory. MUST NOT create a virtual environment by yourself. The script creates `.venv` in the current working directory and installs all dependencies there. Changing directory will cause Python scripts to fail.
+**If `bash` is not in PATH (common on Windows):** run the PowerShell equivalent directly — do not retry bash or search for it:
+
+```powershell
+if (-not (Test-Path .venv\Scripts\python.exe)) { python -m venv .venv }
+.venv\Scripts\python.exe -m pip install --upgrade pip --quiet
+.venv\Scripts\python.exe -m pip install -r .github/skills/aws-sandbox-proposal-master/scripts/requirements.txt --quiet
+if (-not (Test-Path .vscode)) { New-Item -ItemType Directory -Path .vscode | Out-Null }
+if (-not (Test-Path .vscode\settings.json)) {
+  '{"python.defaultInterpreterPath":"${workspaceFolder}/.venv/Scripts/python.exe"}' | Out-File -Encoding utf8 .vscode\settings.json
+}
+Write-Output "Environment ready."
+```
+
+> Do not change directory. The script creates `.venv` in the current working directory.
 
 **Then verify dependencies:**
 
@@ -340,9 +313,14 @@ Read the description and identify:
 
 See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full domain classification table and worked example.
 
-**Step 1-P2: Map Capabilities to AWS Services**
+**Step 1-P2: Build the Service List — Minimum 8 Services**
 
-Read `assets/aws_services.json`. For each capability, pick the best-fit service and verify the name exists in `aws_services.json` before adding it to `service_list`. Typical proposals have 8–15 services. See [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) for the full capability→service mapping table.
+Follow all stages in [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md):
+- **Stage 2:** map explicit capability signals in the prompt to services
+- **Stage 2b (mandatory):** add the 6-service universal baseline + the domain starter stack — this applies to every prompt, especially short or vague ones. After this step you should have 8–12 services before any trimming.
+- **Stage 3:** trim duplicates and clearly out-of-scope services; enforce the 8-service minimum — never trim below 8.
+
+Verify every service name against `assets/aws_services.json` before finalizing.
 
 **Step 1-P3: Detect Region**
 
@@ -362,9 +340,9 @@ When the user provides structured fields: fill any gaps with the defaults from S
 
 **Input:** User-provided business and solution information (structured or raw).
 
-**Output:** All proposal fields populated in memory — either from the prompt, inferred, or `<TODO>`.
+**Output:** Proposal fields held in memory only — either from the prompt, inferred, or the literal string `<TODO>`.
 
-**Save rule:** No file required at this step.
+**Save rule:** NOTHING is written to disk at this step. No Proposal.md. No draft. No summary. No context.json. No folder. Zero files. Step 2 writes the first file.
 
 **Verification:** Every required field has a value (real, inferred, or `<TODO>`). No field is blank.
 
@@ -464,8 +442,13 @@ Then write Python code using the `diagrams` library. Follow [references/DIAGRAM_
 - English-only node labels
 - Import from `diagrams.*` hierarchy — **always resolve names first** with `diagrams_resolver.py`
 - Save the PNG output path for the context JSON
+- **Write the diagram Python code to `output/{ProjectName}/diagram_code.py`** — never to `scripts/` or any skill directory. Execute with `.venv` Python. The `.py` file stays in the output folder alongside the `.png`.
 
-Execute the code in the user's environment. If it fails due to imports, use `diagrams_resolver.py resolve` to find the correct name and retry.
+Execute the code with:
+```bash
+.venv/Scripts/python.exe output/{ProjectName}/diagram_code.py
+```
+If it fails due to imports, use `diagrams_resolver.py resolve` to find the correct name, update `diagram_code.py`, and retry.
 
 Before finalizing, record the rendered service names to `sandbox.architecture.applied_services`.
 If this set does not match `sandbox.business.service_list[].service_name`, fail-fast and report missing/extra services.
@@ -490,13 +473,26 @@ Read these two files before opening the browser:
 - **`references/AWS_CALCULATOR_GUIDE.md`** — exact steps and code patterns for adding services (GROUP A script injection and GROUP B manual form fill)
 - **`references/CALCULATOR_SIZING.md`** — how to size each service, which unit each field expects, and the cost sanity check to run before clicking Share
 
-Do not improvise a different approach. The key rules are:
-- Services that have a `.js` file in `scripts/calculator/` must use that script (read it with the Read tool, paste it into `page.evaluate()`)
-- Services without a script are filled manually using Playwright (`page.fill`, `page.locator`, `page.click`)
-- Do not write your own helper functions — the pre-built scripts already have all helpers inside them
-- Do not use `page.accessibility` or Chrome DevTools MCP — use only the VS Code browser Playwright tools
-- Use the real proposal numbers, not minimal placeholder values
-- After all services are added, run the cost sanity check from `CALCULATOR_SIZING.md`, then get the share link, verify it loads correctly in the browser, then write it to `context.json`
+The exact code patterns for GROUP A injection, GROUP B manual fill, per-service verification, and region checking are in `references/AWS_CALCULATOR_GUIDE.md`. Read that file before opening the browser. The key rules are:
+
+- **One service per `page.evaluate()` call — never batch.** Each GROUP A service gets its own isolated `page.evaluate()` with the full pre-built `.js` script. Batching silently fails because React state does not carry between services in a shared scope.
+- **After each service inject**, navigate to `#/estimate` and confirm the row count increased. If it did not, the save failed — retry that service before continuing.
+- **Before each save**, verify the Region dropdown shows the correct region from `context.json`. If it does not, set it manually before clicking Save.
+- **Use real proposal numbers from `CALCULATOR_SIZING.md`.** Target: $20–$400/month per service, $500–$3,500/month total. If any service exceeds $500/month, the input unit is probably wrong (e.g. a raw request count entered in a "millions" field). Fix it before clicking Share.
+- **Final count check:** After all services are injected, navigate to `#/estimate` and confirm the row count equals `len(service_list)`. Re-add any missing services before clicking Share.
+
+**Step 3B navigation sequence (follow exactly):**
+1. Open a browser tab → navigate to `https://calculator.aws/#/addService`
+2. Select "Search all services" radio button once
+3. For each service: read its `.js` script → inject via `page.evaluate()` → wait for redirect → verify row count at `#/estimate`
+4. After ALL services confirmed: run cost sanity check from `CALCULATOR_SIZING.md`; if any service cost looks wrong, fix the configuration before continuing
+5. Click `Export` → `Share` → `Create public link` → copy the URL
+6. Confirm the URL matches `https://calculator.aws/#/estimate?id=<hash>` and navigate to it to visually confirm all services are listed
+
+**How to populate `applied_services` (MANDATORY — do NOT copy from `service_list`):**
+After step 6 above, read the service name column from the `#/estimate` table. Extract each name exactly as shown. That list is `sandbox.business.applied_services`. Write it to `context.json` via inline Python `-c`. If the count is less than `len(service_list)`, do NOT proceed — re-add the missing services first.
+
+**If Step 3B fails after 3 retries:** Do NOT ask the user. Navigate directly to `https://calculator.aws/#/addService`, start fresh from service #1, and retry the full sequence. If the browser session is lost, open a new tab and restart. The pipeline does not pause — keep retrying until the share link is obtained.
 
 **Input:** `output/{ProjectName}/context.json`, `assets/aws_services.json`.
 
@@ -512,6 +508,26 @@ Merge all collected data into a single JSON file:
 - `sandbox.business.calculator_link` = share URL from Step 3B
 - `sandbox.architecture.applied_services` = service names used by Step 3A
 - `sandbox.business.applied_services` = service names used by Step 3B
+
+**Clean up temp files before the hard gate.** The final output folder must contain only the defined outputs. Delete any extra `.py` files except `diagram_code.py`:
+
+```bash
+.venv/Scripts/python.exe -c "
+import os
+from pathlib import Path
+proj = Path('output/{ProjectName}')
+keep = {'diagram_code.py'}
+deleted = []
+for f in proj.glob('*.py'):
+    if f.name not in keep:
+        f.unlink()
+        deleted.append(f.name)
+if deleted:
+    print('Deleted temp files:', deleted)
+else:
+    print('No temp files to clean up')
+"
+```
 
 **Hard gate — run this verification before proceeding to Step 5:**
 
@@ -785,32 +801,6 @@ Calculator estimate: https://calculator.aws/#/estimate?id=<hash>
 - Keep technical terms, service names, and code in English
 - Proposal content language should match the user's preference
 
-## Common Mistakes to Avoid
-
-1. **Skipping Step 0 env check** — always run `diagrams_resolver.py check` first; mismatched Python environments waste many retries
-2. **Wrong `diagrams` import names** — use `diagrams_resolver.py resolve <service> <module>` to look them up; never guess
-3. **Skipping the diagram** — the generator will not embed an image if the path is missing or the file doesn't exist
-4. **CJK characters in diagram node labels** — causes rendering failures in the `diagrams` library
-5. **Not setting `show=False`** — diagram code tries to open a GUI window
-6. **Forgetting to install `docxtpl`** — the generator depends on both `docxtpl` and `python-docx`
-7. **Hardcoding paths** — let the agent choose sensible paths based on the user's workspace
-8. **Skipping AWS Calculator** — the `calculator_link` now has its own placeholder in the template; always provide it
-9. **Not reading `aws_services.json` first** — typing a short/alias name into the calculator search may return multiple results or the wrong service; always use the exact name from `aws_services.json`
-10. **Not reading `references/LESSONS_LEARNED.md` before Step 3B** — this file records every known failure pattern; skipping it means repeating the same mistakes
-11. **Reading `scripts/chrome_browser.py`** — this file is legacy and not used; reading it wastes context and causes confusion about the Step 3B execution model. Use `references/AWS_CALCULATOR_GUIDE.md` instead
-12. **Stopping after Step 3A to ask "shall I continue with Step 3B?"** — Step 3B is mandatory; there is nothing to ask; proceed immediately
-13. **Reducing the service list to 1 or a subset to "ensure reliable completion"** — this produces a meaningless cost estimate; add all services defined in Step 2 to the calculator, no exceptions
-14. **Saying "natural next steps: expand the estimate"** — if the estimate is incomplete, the run is not done; finish it now
-15. **Copying or reusing context.json from an existing similar output folder** — this silently carries over stale service sets, wrong calculator links, and wrong timestamps; always start from scratch
-16. **Saying "if the calculator can't be completed I'll report the blocker"** — there is no acceptable partial-completion exit; retry the browser automation until it succeeds
-17. **Not writing `expected_services.json` at Step 2B** — without this file, Step 4/5/6 gates cannot detect service list tampering
-18. **Skipping script generation after a GROUP B fill** — every manually filled GROUP B service must get a `.js` script written immediately after it saves; skipping this means the next run repeats the same manual work
-19. **Writing fake output files instead of running the actual scripts** — `architecture.mmd`, `Proposal.md`, `cost_estimate.txt` are not valid outputs; `architecture.png` must come from the diagrams library, `Proposal.docx` must come from `generate_proposal.py`, the calculator link must come from the browser; fabricating these and continuing is silent failure
-20. **Reading only the first 400 lines of SKILL.md** — the file is longer than 400 lines; if the reader stopped at line 400, it missed the Step 3B injection rules, the step details, and the common mistakes; always read to the end before executing
-21. **Asking "which should I run next?" or offering options** — the pipeline order is fixed; if a step fails, fix and retry autonomously; never present choices to the user
-22. **Hardcoding proposal numbers inside the generated script** — scripts must use configurable params with defaults; the actual proposal values go in the `page.evaluate()` override block at call time, not baked into the script body
-23. **Forgetting to update the "Available scripts" list** after writing a new script — the list in this SKILL.md header must stay accurate so future runs correctly classify services as GROUP A
-
 ## Output Completeness Check
 
 Before final handoff, verify all required files exist:
@@ -846,6 +836,7 @@ After each run, summarize what happened and append any new lessons to `reference
 
 ## Reference Files
 
+- [references/CRITICAL_RULES.md](references/CRITICAL_RULES.md) — **Quick reference for critical rules** — read this when something goes wrong or you are unsure
 - [references/PROMPT_PARSER.md](references/PROMPT_PARSER.md) — **How to parse raw/unstructured prompts into proposals** (capability→service mapping, phase templates, worked example)
 - [references/CONTEXT_SCHEMA.md](references/CONTEXT_SCHEMA.md) — Full JSON schema with field descriptions
 - [references/DIAGRAM_GUIDE.md](references/DIAGRAM_GUIDE.md) — Architecture diagram coding guide
