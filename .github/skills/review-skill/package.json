@@ -1,6 +1,6 @@
 {
   "name": "@sdx/sdx-aws-review-skill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AWS Sandbox Proposal review skill — validates service consistency between the proposal plan, AWS Calculator estimate, and architecture diagram, and verifies DOCX content integrity.",
   "keywords": [
     "sdx",

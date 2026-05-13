@@ -35,6 +35,9 @@ Generate reliable, professional-grade AWS Sandbox Innovation Plan proposals thro
 > - **Batch services in one `page.evaluate()`** — one service per call; React state does not carry between calls.
 > - **Run `pip install playwright`** — VS Code provides browser automation built-in; do not install it yourself.
 > - **Ask "Shall I continue?" or offer a menu** — pipeline runs 0→7 without pausing; see banned-phrases list in the pipeline section below.
+> - **Use `require('fs')`, `fs.readFileSync()`, or `import('fs')` inside a Playwright block** — `page.evaluate()` runs in the browser, which has no filesystem access. Read the `.js` file with the Read tool first (a separate step before the Playwright block), then paste its content as a literal string into `page.evaluate()`.
+> - **Fabricate or hardcode a calculator link** — `calculator_link` must be a real URL obtained by clicking Share in the browser. Never write a made-up `?id=` hash to context.json. If Step 3B is incomplete, go back and finish it — do not skip ahead.
+> - **Skip services in Step 3B** — every service in `service_list` must be added to the calculator. Do not stop after the first one.
 >
 > → Full list with details: `references/CRITICAL_RULES.md`
 
@@ -81,8 +84,8 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
 1. **Once, at the very start of GROUP A:** navigate to `https://calculator.aws/#/addService` and select "Search all services". Do NOT repeat this before each script.
 
 2. For each GROUP A service:
-   a. Use the **Read tool** to read `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ServiceName}.js`. Note the `config` object keys.
-   b. In a Playwright block, paste the **entire file content verbatim** as a string into `page.evaluate()`, with your values filled into the `})({...})` override block at the bottom:
+   a. Use the **Read tool** to read `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ServiceName}.js`. This is a **separate tool call before any Playwright block** — do NOT use `require('fs')` or `fs.readFileSync()` inside Playwright. The browser has no filesystem.
+   b. Take the full text you just read. In a Playwright block, paste it **verbatim as a literal string** into `page.evaluate()`, with your values filled into the `})({...})` override block at the bottom:
       ```javascript
       await page.evaluate(`
       (async function configure...(params) {
@@ -91,6 +94,7 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
         region: 'Asia Pacific (Taipei)',
         numberOfRequests: 4000000,
       });
+      // If the region from context.json is not available for this service, stay with the script method — do NOT switch to browser MCP. Just pass the nearest available region instead (e.g. 'Asia Pacific (Singapore)' if 'Asia Pacific (Taipei)' is not listed).
       `);
       await page.waitForURL('**/addService**', { timeout: 30000 }).catch(() =>
         page.waitForTimeout(8000)
@@ -477,9 +481,9 @@ The exact code patterns for GROUP A injection, GROUP B manual fill, per-service 
 
 - **One service per `page.evaluate()` call — never batch.** Each GROUP A service gets its own isolated `page.evaluate()` with the full pre-built `.js` script. Batching silently fails because React state does not carry between services in a shared scope.
 - **After each service inject**, navigate to `#/estimate` and confirm the row count increased. If it did not, the save failed — retry that service before continuing.
-- **Before each save**, verify the Region dropdown shows the correct region from `context.json`. If it does not, set it manually before clicking Save.
+- **Before each save**, verify the Region dropdown shows the correct region from `context.json`. If it does not, set it manually before clicking Save. If the exact region is not available for a specific service, do NOT switch to browser MCP — stay with the script method and select the nearest available region for that service only.
 - **Use real proposal numbers from `CALCULATOR_SIZING.md`.** Target: $20–$400/month per service, $500–$3,500/month total. If any service exceeds $500/month, the input unit is probably wrong (e.g. a raw request count entered in a "millions" field). Fix it before clicking Share.
-- **Final count check:** After all services are injected, navigate to `#/estimate` and confirm the row count equals `len(service_list)`. Re-add any missing services before clicking Share.
+- **Final count check:** After all services are injected, navigate to `#/estimate`. Click the ⚙ gear icon → set page size to **50** → Confirm. All services should now appear on one page. Check: (a) total row count equals `len(service_list)`, (b) no service name appears twice. If a duplicate exists, check its checkbox and click **Delete**. If any service is missing, re-add it. Only proceed to Share once both checks pass.
 
 **Step 3B navigation sequence (follow exactly):**
 1. Open a browser tab → navigate to `https://calculator.aws/#/addService`
@@ -701,7 +705,15 @@ print('R2 PASS — all', len(expected), 'services consistent across plan / calcu
 "
 ```
 
-**R3 — Live calculator audit:** Navigate to `calculator_link` in the browser. Set page size to 50 rows. Read the full service table. Confirm count and names match `expected_services.json`.
+**R3 — Live calculator audit:**
+
+1. Navigate to the `calculator_link` URL in the browser.
+2. **Set page size to 50:** click the ⚙ gear icon (top-right of the service table) → select **50** under "Page size" → click **Confirm**. This loads all services onto one page.
+3. Read every service name from the **Service Name** column. If more than 50 services exist, click Next and collect names from subsequent pages too.
+4. Compare the collected names against `expected_services.json`:
+   - Missing from calculator → mark as FAIL
+   - Duplicate rows (same name twice) → mark as FAIL; delete the extra row
+   - Count matches and all names present → PASS
 
 **R4 — DOCX content verification:** Run `verify_proposal.py` against the generated document. This checks 26 mandatory fields and renders — it is a hard gate:
 

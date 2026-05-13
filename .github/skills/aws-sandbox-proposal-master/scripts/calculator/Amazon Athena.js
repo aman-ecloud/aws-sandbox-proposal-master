@@ -91,7 +91,7 @@
 
   async function selectDropdown(labelText, value, index = 0) {
     const btns = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
-      .filter(el => (el.getAttribute('aria-label') || el.textContent || '').includes(labelText));
+      .filter(el => (el.getAttribute('aria-label') || '').includes(labelText));
     const btn = btns[index] || null;
     if (!btn) { console.warn('[Amazon Athena] Dropdown not found:', labelText, 'index', index); return; }
     scrollTo(btn);

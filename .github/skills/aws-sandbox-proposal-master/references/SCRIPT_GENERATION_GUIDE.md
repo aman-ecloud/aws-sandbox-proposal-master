@@ -113,8 +113,10 @@ Read `scripts/calculator/AWS Lambda.js` as the reference — every generated scr
   }
 
   async function selectDropdown(labelText, value) {
+    // Match only by aria-label, not textContent — textContent shows the current selected value
+    // which can accidentally match other dropdowns (e.g. a "location type" dropdown showing "Region").
     const btns = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
-      .filter(el => (el.getAttribute('aria-label') || el.textContent || '').includes(labelText));
+      .filter(el => (el.getAttribute('aria-label') || '').includes(labelText));
     const btn = btns[0];
     if (!btn) { console.warn('[{ShortName}] Dropdown not found:', labelText); return; }
     scrollTo(btn); await jitter(); btn.click(); await wait(600);

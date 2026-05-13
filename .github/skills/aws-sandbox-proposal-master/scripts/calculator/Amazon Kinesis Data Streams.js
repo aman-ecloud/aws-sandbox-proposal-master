@@ -78,7 +78,7 @@
 
   async function selectDropdown(labelText, value) {
     const btns = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
-      .filter(el => (el.getAttribute('aria-label') || el.textContent || '').includes(labelText));
+      .filter(el => (el.getAttribute('aria-label') || '').includes(labelText));
     const btn = btns[0];
     if (!btn) { console.warn('[Amazon Kinesis Data Streams] Dropdown not found:', labelText); return; }
     scrollTo(btn);

@@ -36,14 +36,15 @@ The pre-built scripts run inside the browser tab. They use React synthetic event
 
 For each GROUP A service, do these steps in order:
 
-**Step 1 — Read the script file** (before any Playwright block, using the Read tool)
+**Step 1 — Read the script file using the Read tool** (this is a separate tool call, NOT inside Playwright)
 ```
 Read: .github/skills/aws-sandbox-proposal-master/scripts/calculator/{ServiceName}.js
 ```
+Do NOT use `require('fs')`, `fs.readFileSync()`, or `import('fs')` inside a Playwright block. `page.evaluate()` runs in the browser — the browser has no access to the filesystem. The Read tool must be called outside of Playwright first.
 
 **Step 2 — Inject the full file content into the browser**
 
-Take the entire file text from Step 1. Fill in the override block at the bottom (`})({ ... })`). Paste the whole thing verbatim into `page.evaluate()`:
+Take the entire file text you just read in Step 1. Fill in the override block at the bottom (`})({ ... })`). Paste the whole thing verbatim as a literal string into `page.evaluate()`:
 
 ```javascript
 await page.evaluate(`

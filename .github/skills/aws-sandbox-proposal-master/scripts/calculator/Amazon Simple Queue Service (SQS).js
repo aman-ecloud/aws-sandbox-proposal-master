@@ -61,7 +61,7 @@
 
   async function selectDropdown(labelText, value, index = 0) {
     const btns = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
-      .filter(el => (el.getAttribute('aria-label') || el.textContent || '').includes(labelText));
+      .filter(el => (el.getAttribute('aria-label') || '').includes(labelText));
     const btn = btns[index];
     if (!btn) { console.warn('[Amazon SQS] Dropdown not found:', labelText); return; }
     scrollTo(btn);

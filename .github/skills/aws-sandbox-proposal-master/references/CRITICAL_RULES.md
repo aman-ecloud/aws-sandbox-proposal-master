@@ -36,6 +36,7 @@ Read this file whenever you are unsure, make a mistake, or something fails mid-r
 - **After each inject**, go to `#/estimate` and confirm the row count increased. If it did not, the save failed — retry that service.
 - **Before each save**, verify the Region dropdown matches the region in `context.json`. Fix it manually if wrong.
 - **Read `references/CALCULATOR_SIZING.md` before adding any service.** Use the sizing values from that file. Target range: $20–$400/month per service, $500–$3,500/month total. If any service exceeds $500/month the quantities are probably in the wrong unit (e.g. raw count entered where millions expected). Fix it before continuing.
+- **To confirm all services at the end, before proposal document creation**, Go to the aws generated link, and read the `#/estimate` table. If there are more than 10 services, then it goes to the second page of the `#/estimate` table. Every page in the `#/estimate` table has 10 services. You have to intelligently check that, all services are present  accordingly.
 - **After all services are confirmed**, read the `#/estimate` table to get `applied_services`, then get the Share link.
 
 ## Context & Placeholders
