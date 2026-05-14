@@ -112,9 +112,70 @@ Read `scripts/calculator/AWS Lambda.js` as the reference — every generated scr
     if (!radio.checked) { scrollTo(radio); await jitter(); radio.click(); await jitter(100, 300); }
   }
 
+  /**
+   * selectRegion — opens the "Choose a Region" dialog (aria-haspopup="dialog").
+   * The AWS Calculator region picker is a dialog overlay, NOT a listbox.
+   * Always use this for region — never use selectDropdown for region.
+   */
+  async function selectRegion(value) {
+    const regionBtn = document.querySelector('button[aria-haspopup="dialog"]');
+    if (!regionBtn) { console.warn('[{ShortName}] Region dialog button not found'); return; }
+    scrollTo(regionBtn);
+    await jitter();
+    regionBtn.dispatchEvent(new PointerEvent('pointerover',  { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseover',  { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mousemove',  { bubbles: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+    regionBtn.click();
+    await wait(1000);
+    const searchInput = document.querySelector('input[role="combobox"]');
+    if (searchInput) {
+      scrollTo(searchInput);
+      setInputValue(searchInput, value);
+      searchInput.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
+      await wait(700);
+    } else {
+      console.warn('[{ShortName}] combobox search input not found');
+    }
+    const option = [...document.querySelectorAll('[role="option"]')]
+      .find(o => o.textContent.trim().includes(value));
+    if (!option) { console.warn('[{ShortName}] Region option not found:', value); return; }
+    scrollTo(option);
+    await jitter();
+    option.dispatchEvent(new PointerEvent('pointerover',  { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new MouseEvent('mouseover',  { bubbles: true }));
+    option.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+    option.dispatchEvent(new MouseEvent('mousemove',  { bubbles: true }));
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    option.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+    option.click();
+    await wait(600);
+    const stillOpen = document.querySelector('[role="dialog"][data-open="true"]');
+    if (stillOpen) {
+      console.warn('[{ShortName}] Region dialog still open after click; retrying');
+      option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+      option.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+      option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+      option.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+      option.click();
+      await wait(600);
+    }
+    console.log('[{ShortName}] Region set to:', value);
+  }
+
+  /**
+   * selectDropdown — for non-region listbox dropdowns (aria-haspopup="listbox").
+   * Do NOT use for region — use selectRegion() instead.
+   */
   async function selectDropdown(labelText, value) {
-    // Match only by aria-label, not textContent — textContent shows the current selected value
-    // which can accidentally match other dropdowns (e.g. a "location type" dropdown showing "Region").
     const btns = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
       .filter(el => (el.getAttribute('aria-label') || '').includes(labelText));
     const btn = btns[0];
@@ -169,7 +230,7 @@ Read `scripts/calculator/AWS Lambda.js` as the reference — every generated scr
 
   await waitForElement('h1, input[aria-label*="Region"]', 15000);
 
-  await selectDropdown('Region', config.region);
+  await selectRegion(config.region);
 
   // {Fill each field here, one call per field}
   await setFieldByAria('{exact aria-label of field 1}', config.{paramName1});

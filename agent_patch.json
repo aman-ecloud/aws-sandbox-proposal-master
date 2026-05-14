@@ -1,0 +1,41 @@
+{
+  "title": "Cloud-Based Virtual Laboratory & Remote Experimentation Platform",
+  "partner": "NovaLab Systems",
+  "contact_name": "Sophia Martinez",
+  "contact_title": "Senior Cloud Solutions Architect",
+  "contact_email": "sophia.martinez@novalab.ai",
+  "solution_type": "Vertical - Education & Scientific Research Platform",
+  "customer_type": "Universities, research institutes, online education providers, and engineering organizations",
+  "aws_funding": "USD 105,000",
+  "labor_cost": "USD 70,000",
+  "total_cost": "USD 175,000",
+  "region": "Asia Pacific (Taipei)",
+  "start_date": "2027-08-01",
+  "end_date": "2028-01-31",
+  "release_date": "2028-03-15",
+  "summary": "A cloud-based virtual laboratory platform that enables users to remotely access simulated and connected lab environments, execute experiments, stream real-time data, collaborate securely, store experiment results, and monitor laboratory resources through centralized dashboards and APIs.",
+  "features": "- Remote access to simulated and physical lab environments\n- Real-time data streaming and experiment telemetry\n- Secure collaboration and role-based access\n- Centralized dashboards and APIs for resource monitoring and management\n- Scalable compute and storage for experiment workloads",
+  "pain_point": "Educational institutions and research organizations face challenges in providing scalable remote access to laboratory environments, experiment data, and collaborative tools, resulting in limited accessibility, underutilized resources, and high operational costs for maintaining physical lab infrastructure.",
+  "justification": "Deploying a virtual laboratory platform reduces physical infrastructure costs, increases utilization of lab equipment, and expands educational access to remote learners and researchers, enabling scalable collaboration and reproducible experiments.",
+  "architecture_description": "Users access the platform via secure APIs and web portals; compute workloads run on EC2 and container tasks; stateful data is stored in RDS and S3; streaming pipelines use Kinesis; authentication via Cognito; caching via ElastiCache; CDN via CloudFront.",
+  "services": [
+    { "service_name": "Amazon EC2", "calculator_config": { "numberOfInstances": 12, "operatingSystem": "Linux" } },
+    { "service_name": "AWS Fargate", "calculator_config": { "numberOfTasksOrPods": 6, "vcpuAllocated": "1", "memoryAllocatedValue": 2 } },
+    { "service_name": "Amazon API Gateway", "calculator_config": { "numberOfRequests": 6000000 } },
+    { "service_name": "AWS Lambda", "calculator_config": { "numberOfRequests": 5000000, "avgDuration": 400, "memoryMb": 1024 } },
+    { "service_name": "Amazon RDS for PostgreSQL", "calculator_config": { "dbInstanceClass": "db.t3.large", "storage": 500 } },
+    { "service_name": "Amazon Simple Storage Service (S3)", "calculator_config": { "storageAmount": 6000, "storageUnit": "GB" }, "diagram_tags": ["storage"] },
+    { "service_name": "Amazon Kinesis Data Streams", "calculator_config": { "shards": 6 } },
+    { "service_name": "Amazon CloudFront", "calculator_config": { "monthlyDataTransferOut": 10240 } },
+    { "service_name": "Amazon Cognito", "calculator_config": { "monthlyActiveUsers": 15000 } },
+    { "service_name": "Amazon ElastiCache", "calculator_config": { "nodeType": "cache.t3.medium", "nodeCount": 2 } },
+    { "service_name": "Amazon CloudWatch", "calculator_config": { "metrics": 400, "alarms": 60 } },
+    { "service_name": "AWS IAM Access Analyzer" }
+  ],
+  "phase_descriptions": [
+    "Discovery, requirements, and architecture design.",
+    "Foundation: core infrastructure, networking, and storage setup.",
+    "Core build: compute, streaming pipelines, APIs, and integration.",
+    "Delivery: testing, security, documentation, and handover."
+  ]
+}

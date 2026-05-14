@@ -61,6 +61,66 @@
     await jitter(100, 300);
   }
 
+
+  /**
+   * selectRegion — opens the "Choose a Region" dialog (aria-haspopup="dialog")
+   * and clicks the matching option. The region picker uses a dialog overlay,
+   * not a listbox, so selectDropdown() cannot be used here.
+   */
+  async function selectRegion(value) {
+    const regionBtn = document.querySelector('button[aria-haspopup="dialog"]');
+    if (!regionBtn) { console.warn('[AWS IAM Access Analyzer] Region dialog button not found'); return; }
+    scrollTo(regionBtn);
+    await jitter();
+    regionBtn.dispatchEvent(new PointerEvent('pointerover',  { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseover',  { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mousemove',  { bubbles: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+    regionBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    regionBtn.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+    regionBtn.click();
+    await wait(1000);
+    const searchInput = document.querySelector('input[role="combobox"]');
+    if (searchInput) {
+      scrollTo(searchInput);
+      setInputValue(searchInput, value);
+      searchInput.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
+      await wait(700);
+    } else {
+      console.warn('[AWS IAM Access Analyzer] combobox search input not found');
+    }
+    const option = [...document.querySelectorAll('[role="option"]')]
+      .find(o => o.textContent.trim().includes(value));
+    if (!option) { console.warn('[AWS IAM Access Analyzer] Region option not found:', value); return; }
+    scrollTo(option);
+    await jitter();
+    option.dispatchEvent(new PointerEvent('pointerover',  { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new MouseEvent('mouseover',  { bubbles: true }));
+    option.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+    option.dispatchEvent(new MouseEvent('mousemove',  { bubbles: true }));
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    option.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+    option.click();
+    await wait(600);
+    const stillOpen = document.querySelector('[role="dialog"][data-open="true"]');
+    if (stillOpen) {
+      console.warn('[AWS IAM Access Analyzer] Region dialog still open after click; retrying');
+      option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+      option.dispatchEvent(new MouseEvent('mousedown',  { bubbles: true, cancelable: true }));
+      option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+      option.dispatchEvent(new MouseEvent('mouseup',    { bubbles: true }));
+      option.click();
+      await wait(600);
+    }
+    console.log('[AWS IAM Access Analyzer] Region set to:', value);
+  }
+
   if (!window.location.hash.includes('/addService') &&
       !window.location.hash.includes('/createCalculator')) {
     window.location.hash = '#/addService';
@@ -95,14 +155,7 @@
 
   await waitForElement('h1, input[aria-label*="Region"]', 15000);
 
-  const regionBtn = [...document.querySelectorAll('button[aria-haspopup="listbox"]')]
-    .find(b => (b.getAttribute('aria-label') || b.textContent || '').includes('Region'));
-  if (regionBtn) {
-    scrollTo(regionBtn); await jitter(); regionBtn.click(); await wait(700);
-    const opt = [...document.querySelectorAll('[role="option"]')]
-      .find(o => o.textContent.trim().includes(config.region));
-    if (opt) { scrollTo(opt); await jitter(); opt.click(); await wait(400); }
-  }
+  await selectRegion(config.region);
 
   await setFieldByAria('Number of analyzers', config.analyzersPerAccount);
   await setFieldByAria('analyzers per account', config.analyzersPerAccount);
