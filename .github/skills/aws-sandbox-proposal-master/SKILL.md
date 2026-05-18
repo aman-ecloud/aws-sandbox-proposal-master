@@ -122,7 +122,11 @@ The pre-built scripts run inside the browser tab using React synthetic events. T
 
 ### After GROUP B: Write the script for next time
 
-**Every time you successfully add a GROUP B service, immediately write a `.js` script for it** so the next run treats it as GROUP A. Follow [references/SCRIPT_GENERATION_GUIDE.md](references/SCRIPT_GENERATION_GUIDE.md) for the full template and rules. Then update the "Available scripts" count/list in this SKILL.md header.
+You just added a GROUP B service. Now write a script for it. Do it right now, before moving on.
+
+Save it to `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ExactServiceName}.js` using the template in [references/SCRIPT_GENERATION_GUIDE.md](references/SCRIPT_GENERATION_GUIDE.md). Then update the "Available scripts" count/list above.
+
+Don't skip this. Don't wait to be asked. Just write it.
 
 ## When to Use This Skill
 

@@ -112,6 +112,19 @@ await page.getByRole('radio', { name: /Search all services/i }).check().catch(()
 
 ---
 
+## Write a script right after each GROUP B service
+
+You just added a GROUP B service manually. Now write a `.js` script for it **before moving to the next service**. Don't wait to be asked — just do it every time.
+
+- Save it to: `.github/skills/aws-sandbox-proposal-master/scripts/calculator/{ExactServiceName}.js`
+- Copy the template from `references/SCRIPT_GENERATION_GUIDE.md`
+- Use the same field values you just filled in as the defaults in the script
+- Use `selectRegion(config.region)` for the region field (not `selectDropdown`)
+
+That's it. Once the script is saved, move on to the next service.
+
+---
+
 ## After all services are added
 
 Navigate to the estimate summary:

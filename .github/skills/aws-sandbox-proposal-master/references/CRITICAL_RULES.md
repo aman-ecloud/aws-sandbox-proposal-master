@@ -14,15 +14,16 @@ Read this file whenever you are unsure, make a mistake, or something fails mid-r
 
 | File | How it is created | Forbidden method |
 |---|---|---|
-| `context.json` | `scaffold_context.py` via Bash | Write / Edit / Apply Patch |
+| `context.json` | `scaffold_context.py` via Bash or Powershell| Write / Edit / Apply Patch |
 | `expected_services.json` | `lock_services.py` via Bash | Write / Edit / Apply Patch |
 | `architecture.png` | `diagram_code.py` via Bash | Any text/mmd/md substitute |
 | `Proposal.docx` | `generate_proposal.py` via Bash | `proposal.md` or any markdown |
 | `review_report.txt` | review-skill R1→R5 output | Writing by hand |
+| `scripts/calculator/{Name}.js` | Write tool — after each GROUP B service | Skipping it |
 
 - **Never use Write, Edit, or Apply Patch on any output file.** All files in `output/{ProjectName}/` must be produced by Bash + scripts. Using Apply Patch on an output file is fabrication regardless of its content.
 - **Never create any file named `proposal.md`, `Proposal.md`, or any markdown/txt proposal variant.** The only valid proposal output is `Proposal.docx` from `generate_proposal.py`.
-- **`.github/skills/` is read-only.** Never create or modify anything there.
+- **`.github/skills/` is read-only** — except for one thing: after you add a GROUP B service, write its `.js` script to `scripts/calculator/` right away. That's the one place you're allowed to write there. Everything else in `.github/skills/` stays untouched.
 - **Never create extra `.py` scripts** in `output/` beyond `diagram_code.py`. Use `python -c "..."` inline.
 - **Never run `pip install playwright`.** Browser automation uses VS Code's built-in Playwright tools.
 
